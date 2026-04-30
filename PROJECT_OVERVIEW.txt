@@ -1,0 +1,197 @@
+=====================================
+PROJECT: TapID (folder: TikTag)
+Smart Identity & Interaction Platform
+=====================================
+
+TAGLINE
+-------
+"Tap → Experience → Action"
+Not a digital business card — a Smart Identity & Interaction Platform.
+
+COMPETITORS
+-----------
+- Popl
+- V1CE
+- Blinq
+Differentiation: stronger AI layer + smarter interaction experience.
+
+CORE CONCEPT
+------------
+User taps NFC card or scans QR code → enters a dynamic, intelligent experience.
+Everything optimized for conversion and interaction.
+
+TECH STACK
+----------
+- Next.js 14 (App Router)
+- Firebase Auth + Firestore
+- TailwindCSS
+- Framer Motion (light animations)
+- Anthropic Claude API (AI features)
+- Recharts (analytics charts)
+- qrcode npm package (QR generation)
+- Lucide React (icons)
+
+PROJECT FOLDER
+--------------
+C:\AI\TikTag\
+
+URL STRUCTURE
+-------------
+tapid.com/u/{username}   → public smart profile page
+tapid.com/dashboard      → user dashboard
+tapid.com/auth/login     → login
+tapid.com/auth/register  → register
+
+=====================================
+PHASE 1 — MVP
+=====================================
+
+1. AUTH SYSTEM
+--------------
+- Email/Password login
+- Google OAuth login
+- User profiles stored in Firestore
+
+2. USER DASHBOARD
+-----------------
+Sections:
+- My Profile  → edit name, title, bio, photo, accent color
+- My Links    → add/remove/reorder links
+- Analytics   → charts showing views and clicks
+- Settings    → account settings
+
+3. PUBLIC SMART PROFILE PAGE (/u/username)
+------------------------------------------
+- Profile image
+- Name + Title
+- Bio
+- Action buttons: Call, WhatsApp, Email, Save Contact (vCard)
+- Social links row
+- Custom link buttons
+- QR code display
+Design goal: Apple-level clean, mobile-first, fast (<1s load)
+
+4. LINK ACTION SYSTEM
+---------------------
+Each button type:
+- Open URL
+- Call phone number
+- Open WhatsApp chat
+- Send Email
+
+5. QR CODE SYSTEM
+-----------------
+- Auto-generated per user, points to /u/username
+- Downloadable as PNG
+
+6. BASIC ANALYTICS
+------------------
+Track:
+- Profile views
+- Button clicks
+- Traffic source: QR / NFC / Direct (via ?s= query param)
+Show line chart (views over time) + bar chart (clicks by button) in dashboard.
+
+=====================================
+PHASE 2 — AI LAYER
+=====================================
+
+1. AI BIO GENERATOR
+- Input: job title + tone/style
+- Output: professional bio text
+- API route: POST /api/ai/bio
+
+2. AI WHATSAPP MESSAGE SUGGESTION
+- Input: visitor name + host title
+- Output: suggested intro message
+- API route: POST /api/ai/message
+
+3. AI PROFILE ADVISOR
+- Input: current profile data
+- Output: tips to improve profile
+- API route: POST /api/ai/advice
+
+All AI powered by Anthropic Claude API (claude-haiku for speed/cost).
+
+=====================================
+PHASE 3 — NFC INTEGRATION
+=====================================
+
+- NFC card programmed to open tapid.com/u/username?s=nfc
+- Analytics already separates NFC vs QR vs Direct traffic
+- No extra hardware integration needed — just URL tracking
+
+=====================================
+DATA MODELS (Firestore)
+=====================================
+
+users/{uid}:
+  uid, email, username, displayName, title, bio,
+  photoURL, accentColor, links[], socials[],
+  phone, whatsapp, createdAt, plan (free/pro)
+
+analytics/{uid}/events/{eventId}:
+  type (view/click), target, source (qr/nfc/direct),
+  timestamp, userAgent
+
+usernames/{username}:
+  { uid } — for fast username uniqueness checks
+
+=====================================
+DESIGN SYSTEM
+=====================================
+
+Colors:
+  Background: #000000 / #0a0a0a
+  Surface:    #111111 / #1a1a1a
+  Border:     #222222
+  Text:       #ffffff / #a0a0a0
+  Accent:     user-defined (default #6366f1 indigo)
+
+Font: Inter (next/font/google)
+
+Radius: cards=rounded-2xl, buttons=rounded-xl, inputs=rounded-lg
+Spacing: 8px grid
+Animation: Framer Motion, subtle only
+
+Design inspiration: Apple + Stripe + Notion
+
+=====================================
+ENVIRONMENT VARIABLES (.env.local)
+=====================================
+
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+ANTHROPIC_API_KEY=
+
+=====================================
+BUILD ORDER
+=====================================
+
+1.  Project bootstrap (create-next-app + install deps)
+2.  tailwind.config.ts + design tokens
+3.  app/layout.tsx (root layout, Inter font)
+4.  lib/firebase.ts
+5.  lib/firestore.ts (CRUD helpers)
+6.  types/index.ts
+7.  hooks/useAuth.ts
+8.  app/(auth)/login/page.tsx
+9.  app/(auth)/register/page.tsx
+10. components/auth/AuthGuard.tsx
+11. app/dashboard/layout.tsx (sidebar shell)
+12. components/dashboard/Sidebar.tsx
+13. app/dashboard/page.tsx (overview)
+14. app/dashboard/profile/page.tsx
+15. app/dashboard/links/page.tsx
+16. app/dashboard/analytics/page.tsx
+17. app/dashboard/settings/page.tsx
+18. app/u/[username]/page.tsx (PUBLIC profile)
+19. components/profile/QRCodeDisplay.tsx
+20. lib/analytics.ts
+21. app/api/ai/bio/route.ts
+22. app/api/ai/message/route.ts
+23. app/page.tsx (landing page)
