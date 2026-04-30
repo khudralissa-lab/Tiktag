@@ -22,12 +22,13 @@ jobs:
         run: npx @cloudflare/next-on-pages@1
         env:
           NPM_CONFIG_LEGACY_PEER_DEPS: 'true'
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
-          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          NEXT_PUBLIC_FIREBASE_API_KEY: AIzaSyCMQHQDG4-oquLDoiIkiGXlNNj4fsKgTN8
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: tiktag-4f3cb.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: tiktag-4f3cb
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: tiktag-4f3cb.firebasestorage.app
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '666070388795'
+          NEXT_PUBLIC_FIREBASE_APP_ID: 1:666070388795:web:09354b81e8746da16e0c1e
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
