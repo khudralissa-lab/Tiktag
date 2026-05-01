@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import AuthGuard from "@/components/auth/AuthGuard";
 import Sidebar from "@/components/dashboard/Sidebar";
 
