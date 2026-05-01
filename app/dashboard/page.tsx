@@ -11,11 +11,12 @@ import {
   ArrowRight, Eye, MousePointer, QrCode, User,
   Link2, Nfc, Copy, ExternalLink, CheckCircle2, Palette,
 } from "lucide-react";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 import type { AnalyticsEvent } from "@/types";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { profile, loading } = useProfile(user?.uid);
+  const { profile, loading, error, retry } = useProfile(user?.uid);
   const [stats, setStats] = useState({ views: 0, clicks: 0, qr: 0 });
   const [copied, setCopied] = useState(false);
 
@@ -30,6 +31,7 @@ export default function DashboardPage() {
   }, [user]);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (error) return <BlockedBanner onRetry={retry} />;
 
   const firstName = profile?.displayName?.split(" ")[0] || "there";
   const completion = profile ? profileCompletion(profile) : 0;

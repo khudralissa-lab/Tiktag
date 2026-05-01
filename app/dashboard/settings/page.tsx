@@ -4,12 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const { profile, loading } = useProfile(user?.uid);
+  const { profile, loading, error, retry } = useProfile(user?.uid);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (error) return <BlockedBanner onRetry={retry} />;
 
   return (
     <div className="p-8 max-w-2xl">

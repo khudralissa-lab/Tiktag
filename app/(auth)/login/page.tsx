@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { isFirebaseBlocked } from "@/lib/firebaseError";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 import { motion } from "framer-motion";
 
 export default function LoginPage() {
@@ -12,7 +14,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [blocked, setBlocked] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  if (blocked) {
+    return <BlockedBanner fullPage onRetry={() => setBlocked(false)} />;
+  }
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,8 +28,13 @@ export default function LoginPage() {
     try {
       await loginWithEmail(email, password);
       router.push("/dashboard");
-    } catch {
-      setError("Invalid email or password.");
+    } catch (err: unknown) {
+      console.error("[TikTag] Login failed:", err);
+      if (isFirebaseBlocked(err)) {
+        setBlocked(true);
+      } else {
+        setError("Invalid email or password.");
+      }
     } finally {
       setLoading(false);
     }
@@ -33,8 +45,13 @@ export default function LoginPage() {
     try {
       await loginWithGoogle();
       router.push("/dashboard");
-    } catch {
-      setError("Google sign-in failed.");
+    } catch (err: unknown) {
+      console.error("[TikTag] Google login failed:", err);
+      if (isFirebaseBlocked(err)) {
+        setBlocked(true);
+      } else {
+        setError("Google sign-in failed.");
+      }
     }
   };
 

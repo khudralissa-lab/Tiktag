@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { Save } from "lucide-react";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -23,7 +24,7 @@ const st = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,2
 
 export default function ContactPage() {
   const { user } = useAuth();
-  const { profile, loading, update } = useProfile(user?.uid);
+  const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [form, setForm] = useState({ phone: "", whatsapp: "", website: "" });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -48,6 +49,7 @@ export default function ContactPage() {
   };
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (error) return <BlockedBanner onRetry={retry} />;
 
   return (
     <div className="p-8 max-w-2xl">

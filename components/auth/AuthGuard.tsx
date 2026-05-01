@@ -3,14 +3,19 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, authError, retryAuth } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) router.push("/login");
-  }, [user, loading, router]);
+    if (!loading && !authError && !user) router.push("/login");
+  }, [user, loading, authError, router]);
+
+  if (authError) {
+    return <BlockedBanner fullPage onRetry={retryAuth} />;
+  }
 
   if (loading) {
     return (

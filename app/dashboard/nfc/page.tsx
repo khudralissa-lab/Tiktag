@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { Copy, CheckCircle2, ExternalLink, Package, CreditCard, Zap } from "lucide-react";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 import Link from "next/link";
 
 const STATUS_STEPS = [
@@ -15,11 +16,12 @@ const STATUS_STEPS = [
 
 export default function NFCPage() {
   const { user } = useAuth();
-  const { profile, loading, update } = useProfile(user?.uid);
+  const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (error) return <BlockedBanner onRetry={retry} />;
 
   const profileUrl = profile?.username ? `https://tiktag.io/u/${profile.username}` : null;
   const status = profile?.nfcStatus || "not_ordered";

@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Link2, Phone, MessageCircle, Mail, Save, GripVertical } from "lucide-react";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 import type { CustomLink } from "@/types";
 
 const TYPE_ICONS = { url: Link2, call: Phone, whatsapp: MessageCircle, email: Mail };
@@ -16,7 +17,7 @@ function newLink(): CustomLink {
 
 export default function LinksPage() {
   const { user } = useAuth();
-  const { profile, loading, update } = useProfile(user?.uid);
+  const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [links, setLinks] = useState<CustomLink[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -43,6 +44,7 @@ export default function LinksPage() {
   };
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (error) return <BlockedBanner onRetry={retry} />;
 
   return (
     <div className="p-8 max-w-2xl">

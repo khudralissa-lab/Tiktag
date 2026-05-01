@@ -5,11 +5,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { Save, CheckCircle2 } from "lucide-react";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 import { THEME_LIST, getTheme } from "@/lib/themes";
 
 export default function ThemePage() {
   const { user } = useAuth();
-  const { profile, loading, update } = useProfile(user?.uid);
+  const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [selected, setSelected] = useState("midnight");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -27,6 +28,7 @@ export default function ThemePage() {
   };
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (error) return <BlockedBanner onRetry={retry} />;
 
   const currentTheme = getTheme(selected);
 

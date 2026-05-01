@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { Save, Sparkles, ExternalLink } from "lucide-react";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 import Link from "next/link";
 
 const cls = "w-full px-4 py-3 rounded-xl text-white text-sm placeholder:text-white/20 focus:outline-none transition-colors";
@@ -12,7 +13,7 @@ const st = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,2
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const { profile, loading, update } = useProfile(user?.uid);
+  const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [form, setForm] = useState({
     displayName: "", title: "", bio: "", photoURL: "", coverPhotoUrl: "", location: "",
   });
@@ -60,6 +61,7 @@ export default function ProfilePage() {
   };
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (error) return <BlockedBanner onRetry={retry} />;
 
   return (
     <div className="p-8 max-w-2xl">

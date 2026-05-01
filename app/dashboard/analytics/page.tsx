@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getAnalyticsEvents } from "@/lib/firestore";
+import { isFirebaseBlocked } from "@/lib/firebaseError";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { motion } from "framer-motion";
 import type { AnalyticsEvent } from "@/types";
@@ -43,16 +45,27 @@ export default function AnalyticsPage() {
   const { user } = useAuth();
   const [data, setData] = useState<ReturnType<typeof processEvents> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<"blocked" | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
-    getAnalyticsEvents(user.uid, 30).then((events) => {
-      setData(processEvents(events));
-      setLoading(false);
-    });
-  }, [user]);
+    setLoading(true);
+    setError(null);
+    getAnalyticsEvents(user.uid, 30)
+      .then((events) => {
+        setData(processEvents(events));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("[TikTag] Analytics fetch failed:", err);
+        if (isFirebaseBlocked(err)) setError("blocked");
+        setLoading(false);
+      });
+  }, [user, retryKey]);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading analytics…</div>;
+  if (error) return <BlockedBanner onRetry={() => setRetryKey((k) => k + 1)} />;
 
   const stats = [
     { label: "Total Views", value: data?.totalViews ?? 0 },

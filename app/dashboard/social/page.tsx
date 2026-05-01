@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { Save } from "lucide-react";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 
 const SOCIALS = [
   { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username" },
@@ -20,7 +21,7 @@ const st = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,2
 
 export default function SocialPage() {
   const { user } = useAuth();
-  const { profile, loading, update } = useProfile(user?.uid);
+  const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [form, setForm] = useState<Record<string, string>>({
     linkedin: "", instagram: "", facebook: "", tiktok: "", youtube: "", xTwitter: "",
   });
@@ -50,6 +51,7 @@ export default function SocialPage() {
   };
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (error) return <BlockedBanner onRetry={retry} />;
 
   return (
     <div className="p-8 max-w-2xl">

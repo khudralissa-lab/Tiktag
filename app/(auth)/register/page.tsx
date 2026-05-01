@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { createUserProfile, isUsernameAvailable } from "@/lib/firestore";
+import { isFirebaseBlocked } from "@/lib/firebaseError";
+import BlockedBanner from "@/components/ui/BlockedBanner";
 import { motion } from "framer-motion";
 
 export default function RegisterPage() {
@@ -17,7 +19,12 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [uid, setUid] = useState("");
   const [error, setError] = useState("");
+  const [blocked, setBlocked] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  if (blocked) {
+    return <BlockedBanner fullPage onRetry={() => setBlocked(false)} />;
+  }
 
   const handleAccount = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,8 +35,13 @@ export default function RegisterPage() {
       setUid(cred.user.uid);
       setStep("username");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Registration failed.";
-      setError(msg.includes("email-already-in-use") ? "Email already in use." : "Registration failed.");
+      console.error("[TikTag] Register failed:", err);
+      if (isFirebaseBlocked(err)) {
+        setBlocked(true);
+      } else {
+        const msg = err instanceof Error ? err.message : "";
+        setError(msg.includes("email-already-in-use") ? "Email already in use." : "Registration failed.");
+      }
     } finally {
       setLoading(false);
     }
@@ -56,8 +68,13 @@ export default function RegisterPage() {
         whatsapp: "",
       });
       router.push("/dashboard");
-    } catch {
-      setError("Failed to save profile.");
+    } catch (err: unknown) {
+      console.error("[TikTag] Profile creation failed:", err);
+      if (isFirebaseBlocked(err)) {
+        setBlocked(true);
+      } else {
+        setError("Failed to save profile.");
+      }
     } finally {
       setLoading(false);
     }
