@@ -15,7 +15,12 @@ export default function QRPage() {
   const [copied, setCopied] = useState(false);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
-  if (error) return <BlockedBanner onRetry={retry} />;
+
+  if (error) return (
+    <div className="p-8 max-w-2xl">
+      <BlockedBanner errorType={error} onRetry={retry} />
+    </div>
+  );
 
   if (!profile?.username) return (
     <div className="p-8 max-w-2xl">

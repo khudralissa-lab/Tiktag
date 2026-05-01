@@ -31,7 +31,6 @@ export default function DashboardPage() {
   }, [user]);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
-  if (error) return <BlockedBanner onRetry={retry} />;
 
   const firstName = profile?.displayName?.split(" ")[0] || "there";
   const completion = profile ? profileCompletion(profile) : 0;
@@ -46,6 +45,7 @@ export default function DashboardPage() {
 
   return (
     <div className="p-8 max-w-4xl">
+      {error && <BlockedBanner errorType={error} onRetry={retry} />}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <h1 className="text-2xl font-semibold text-white">Hey, {firstName} 👋</h1>
         <p className="text-white/35 text-sm mt-1">Here&apos;s your Tiktag overview.</p>

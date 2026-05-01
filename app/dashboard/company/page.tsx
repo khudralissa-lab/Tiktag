@@ -37,10 +37,10 @@ export default function CompanyPage() {
   };
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
-  if (error) return <BlockedBanner onRetry={retry} />;
 
   return (
     <div className="p-8 max-w-2xl">
+      {error && <BlockedBanner errorType={error} onRetry={retry} />}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <h1 className="text-2xl font-semibold text-white mb-1">Company Details</h1>
         <p className="text-white/35 text-sm">Your company information shown below your name on the profile.</p>

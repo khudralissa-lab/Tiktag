@@ -40,13 +40,13 @@ function processEvents(events: AnalyticsEvent[]) {
 }
 
 const COLORS = ["#6366f1", "#22d3ee", "#10b981"];
-const ANALYTICS_TIMEOUT_MS = 10000;
+const ANALYTICS_TIMEOUT_MS = 25000;
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
   const [data, setData] = useState<ReturnType<typeof processEvents> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<"blocked" | null>(null);
+  const [error, setError] = useState<"blocked" | "slow" | null>(null);
   const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
@@ -58,9 +58,9 @@ export default function AnalyticsPage() {
 
     const timeout = setTimeout(() => {
       if (!settled) {
-        console.warn("[TikTag] Analytics timeout — possibly blocked by a browser extension");
+        console.warn("[TikTag] Analytics fetch timed out after 25s");
         settled = true;
-        setError("blocked");
+        setError("slow");
         setLoading(false);
       }
     }, ANALYTICS_TIMEOUT_MS);
@@ -88,7 +88,11 @@ export default function AnalyticsPage() {
   }, [user, retryKey]);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading analytics…</div>;
-  if (error) return <BlockedBanner onRetry={() => setRetryKey((k) => k + 1)} />;
+  if (error) return (
+    <div className="p-8 max-w-4xl">
+      <BlockedBanner errorType={error} onRetry={() => setRetryKey((k) => k + 1)} />
+    </div>
+  );
 
   const stats = [
     { label: "Total Views", value: data?.totalViews ?? 0 },

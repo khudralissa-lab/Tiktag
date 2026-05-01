@@ -1,15 +1,34 @@
 "use client";
 
-import { ShieldAlert, RefreshCw } from "lucide-react";
+import { ShieldAlert, RefreshCw, Wifi } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Props {
   onRetry?: () => void;
   /** Full-page centered layout (for auth failures). Defaults to inline dashboard card. */
   fullPage?: boolean;
+  /** "blocked" = ad blocker detected, "slow" = timeout / slow connection */
+  errorType?: "blocked" | "slow";
 }
 
-export default function BlockedBanner({ onRetry, fullPage = false }: Props) {
+export default function BlockedBanner({ onRetry, fullPage = false, errorType = "blocked" }: Props) {
+  const isBlocked = errorType === "blocked";
+
+  const icon = isBlocked
+    ? <ShieldAlert className="w-6 h-6 text-amber-400" />
+    : <Wifi className="w-6 h-6 text-amber-400" />;
+
+  const title = isBlocked ? "Connection blocked" : "Connection is slow";
+
+  const body = isBlocked
+    ? "Your browser is blocking connection.\nPlease disable ad blocker or privacy shields for this site."
+    : "Connection is slow. Please retry.";
+
+  const inlineTitle = isBlocked ? "Connection blocked by your browser" : "Connection is slow";
+  const inlineBody = isBlocked
+    ? "Your browser is blocking connection. Please disable ad blocker or privacy shields for this site."
+    : "Connection is slow. Please retry.";
+
   if (fullPage) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-6">
@@ -23,12 +42,11 @@ export default function BlockedBanner({ onRetry, fullPage = false }: Props) {
             className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
             style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}
           >
-            <ShieldAlert className="w-6 h-6 text-amber-400" />
+            {icon}
           </div>
-          <h2 className="text-white text-xl font-semibold mb-2">Connection blocked</h2>
-          <p className="text-white/45 text-sm leading-relaxed mb-6">
-            Your browser is blocking connection.<br />
-            Please disable ad blocker or privacy shields for this site.
+          <h2 className="text-white text-xl font-semibold mb-2">{title}</h2>
+          <p className="text-white/45 text-sm leading-relaxed mb-6" style={{ whiteSpace: "pre-line" }}>
+            {body}
           </p>
           {onRetry && (
             <button
@@ -46,25 +64,25 @@ export default function BlockedBanner({ onRetry, fullPage = false }: Props) {
   }
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="mb-5">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="p-5 rounded-2xl flex items-start gap-4"
+        className="p-4 rounded-2xl flex items-start gap-4"
         style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.18)" }}
       >
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
           style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}
         >
-          <ShieldAlert className="w-4 h-4 text-amber-400" />
+          {isBlocked
+            ? <ShieldAlert className="w-4 h-4 text-amber-400" />
+            : <Wifi className="w-4 h-4 text-amber-400" />}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-white text-sm font-medium mb-1">Connection blocked by your browser</p>
-          <p className="text-white/45 text-xs leading-relaxed">
-            Your browser is blocking connection. Please disable ad blocker or privacy shields for this site.
-          </p>
+          <p className="text-white text-sm font-medium mb-1">{inlineTitle}</p>
+          <p className="text-white/45 text-xs leading-relaxed">{inlineBody}</p>
           {onRetry && (
             <button
               onClick={onRetry}
