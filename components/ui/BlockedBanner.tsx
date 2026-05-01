@@ -27,8 +27,8 @@ export default function BlockedBanner({ onRetry, fullPage = false }: Props) {
           </div>
           <h2 className="text-white text-xl font-semibold mb-2">Connection blocked</h2>
           <p className="text-white/45 text-sm leading-relaxed mb-6">
-            Your browser or an extension (AdBlock, Brave Shields, uBlock) is blocking Firebase.
-            Please disable it for this site and try again.
+            Your browser is blocking connection.<br />
+            Please disable ad blocker or privacy shields for this site.
           </p>
           {onRetry && (
             <button
@@ -63,7 +63,7 @@ export default function BlockedBanner({ onRetry, fullPage = false }: Props) {
         <div className="flex-1 min-w-0">
           <p className="text-white text-sm font-medium mb-1">Connection blocked by your browser</p>
           <p className="text-white/45 text-xs leading-relaxed">
-            Please disable AdBlock or privacy extensions for this site, then retry.
+            Your browser is blocking connection. Please disable ad blocker or privacy shields for this site.
           </p>
           {onRetry && (
             <button

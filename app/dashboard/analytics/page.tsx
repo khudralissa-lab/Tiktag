@@ -40,6 +40,7 @@ function processEvents(events: AnalyticsEvent[]) {
 }
 
 const COLORS = ["#6366f1", "#22d3ee", "#10b981"];
+const ANALYTICS_TIMEOUT_MS = 10000;
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
@@ -52,16 +53,38 @@ export default function AnalyticsPage() {
     if (!user) return;
     setLoading(true);
     setError(null);
+
+    let settled = false;
+
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        console.warn("[TikTag] Analytics timeout — possibly blocked by a browser extension");
+        settled = true;
+        setError("blocked");
+        setLoading(false);
+      }
+    }, ANALYTICS_TIMEOUT_MS);
+
     getAnalyticsEvents(user.uid, 30)
       .then((events) => {
-        setData(processEvents(events));
-        setLoading(false);
+        if (!settled) {
+          clearTimeout(timeout);
+          settled = true;
+          setData(processEvents(events));
+          setLoading(false);
+        }
       })
       .catch((err) => {
-        console.error("[TikTag] Analytics fetch failed:", err);
-        if (isFirebaseBlocked(err)) setError("blocked");
-        setLoading(false);
+        if (!settled) {
+          clearTimeout(timeout);
+          settled = true;
+          console.error("[TikTag] Analytics fetch failed:", err);
+          if (isFirebaseBlocked(err)) setError("blocked");
+          setLoading(false);
+        }
       });
+
+    return () => { clearTimeout(timeout); settled = true; };
   }, [user, retryKey]);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading analytics…</div>;

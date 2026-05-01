@@ -5,6 +5,8 @@ import { getUserProfile, updateUserProfile } from "@/lib/firestore";
 import { isFirebaseBlocked } from "@/lib/firebaseError";
 import type { UserProfile } from "@/types";
 
+const PROFILE_TIMEOUT_MS = 10000;
+
 export function useProfile(uid: string | undefined) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -15,16 +17,38 @@ export function useProfile(uid: string | undefined) {
     if (!uid) { setLoading(false); return; }
     setLoading(true);
     setError(null);
+
+    let settled = false;
+
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        console.warn("[TikTag] Firestore timeout — possibly blocked by a browser extension");
+        settled = true;
+        setError("blocked");
+        setLoading(false);
+      }
+    }, PROFILE_TIMEOUT_MS);
+
     getUserProfile(uid)
       .then((p) => {
-        setProfile(p);
-        setLoading(false);
+        if (!settled) {
+          clearTimeout(timeout);
+          settled = true;
+          setProfile(p);
+          setLoading(false);
+        }
       })
       .catch((err) => {
-        console.error("[TikTag] Firestore profile fetch failed:", err);
-        if (isFirebaseBlocked(err)) setError("blocked");
-        setLoading(false);
+        if (!settled) {
+          clearTimeout(timeout);
+          settled = true;
+          console.error("[TikTag] Firestore profile fetch failed:", err);
+          if (isFirebaseBlocked(err)) setError("blocked");
+          setLoading(false);
+        }
       });
+
+    return () => { clearTimeout(timeout); settled = true; };
   }, [uid, retryKey]);
 
   const retry = () => setRetryKey((k) => k + 1);
