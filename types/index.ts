@@ -2,17 +2,40 @@ export interface UserProfile {
   uid: string;
   email: string;
   username: string;
+  // Personal
   displayName: string;
   title: string;
   bio: string;
   photoURL: string;
-  accentColor: string;
+  coverPhotoUrl?: string;
+  location?: string;
+  // Contact
   phone: string;
   whatsapp: string;
+  website?: string;
+  // Company
+  companyName?: string;
+  companyLogoUrl?: string;
+  companyWebsite?: string;
+  // Social
+  linkedin?: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  youtube?: string;
+  xTwitter?: string;
+  // Legacy socials array (kept for backward compat)
+  socials?: Social[];
+  // Links
   links: CustomLink[];
-  socials: Social[];
+  // Appearance
+  accentColor: string;
+  theme?: string;
+  // Meta
   plan: "free" | "pro";
+  nfcStatus?: "not_ordered" | "ordered" | "activated";
   createdAt: number;
+  updatedAt?: number;
 }
 
 export interface CustomLink {
@@ -21,6 +44,8 @@ export interface CustomLink {
   url: string;
   type: "url" | "call" | "whatsapp" | "email";
   icon?: string;
+  enabled?: boolean;
+  order?: number;
 }
 
 export interface Social {
