@@ -83,6 +83,12 @@ export default function PublicProfileClient({ username, profile: initialProfile 
     );
   }, [username, profile]);
 
+  const profileUid = profile?.uid;
+  useEffect(() => {
+    if (!profileUid) return;
+    trackProfileView(profileUid);
+  }, [profileUid]);
+
   if (notFound) return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-white/40 text-sm">Profile not found.</p>
@@ -99,10 +105,6 @@ export default function PublicProfileClient({ username, profile: initialProfile 
     typeof window !== "undefined"
       ? window.location.href
       : `https://tiktag.io/u/${profile.username}`;
-
-  useEffect(() => {
-    trackProfileView(profile.uid);
-  }, [profile.uid]);
 
   const handleAction = (label: string, href: string) => {
     trackButtonClick(profile.uid, label);
