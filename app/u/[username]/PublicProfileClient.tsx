@@ -69,8 +69,31 @@ function SocialButton({
   );
 }
 
-export default function PublicProfileClient({ profile }: { profile: UserProfile }) {
+export default function PublicProfileClient({ username, profile: initialProfile }: { username?: string; profile?: UserProfile }) {
+  const [profile, setProfile] = useState<UserProfile | null>(initialProfile ?? null);
+  const [notFound, setNotFound] = useState(false);
   const [showQR, setShowQR] = useState(false);
+
+  useEffect(() => {
+    if (profile || !username) return;
+    import("@/lib/firestore").then(({ getProfileByUsername }) =>
+      getProfileByUsername(username)
+        .then((p) => { if (p) setProfile(p as UserProfile); else setNotFound(true); })
+        .catch(() => setNotFound(true))
+    );
+  }, [username, profile]);
+
+  if (notFound) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-white/40 text-sm">Profile not found.</p>
+    </div>
+  );
+  if (!profile) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-white/30 text-sm">Loading…</p>
+    </div>
+  );
+
   const theme = getTheme(profile.theme);
   const profileUrl =
     typeof window !== "undefined"
