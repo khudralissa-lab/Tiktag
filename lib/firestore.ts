@@ -3,6 +3,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   collection,
   query,
   where,
@@ -49,6 +50,14 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
 export async function isUsernameAvailable(username: string): Promise<boolean> {
   const snap = await getDoc(doc(db, "usernames", username));
   return !snap.exists();
+}
+
+export async function updateUsername(uid: string, oldUsername: string, newUsername: string): Promise<void> {
+  if (oldUsername && oldUsername !== newUsername) {
+    await deleteDoc(doc(db, "usernames", oldUsername));
+  }
+  await setDoc(doc(db, "usernames", newUsername), { uid });
+  await updateDoc(doc(db, "users", uid), { username: newUsername });
 }
 
 export async function trackEvent(uid: string, event: AnalyticsEvent) {
