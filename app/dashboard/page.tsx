@@ -20,15 +20,16 @@ export default function DashboardPage() {
   const [stats, setStats] = useState({ views: 0, clicks: 0, qr: 0 });
   const [copied, setCopied] = useState(false);
 
+  const uid = user?.uid;
   useEffect(() => {
-    if (!user) return;
-    getAnalyticsEvents(user.uid, 30).then((events: AnalyticsEvent[]) => {
+    if (!uid) return;
+    getAnalyticsEvents(uid, 30).then((events: AnalyticsEvent[]) => {
       const views = events.filter((e) => e.type === "view").length;
       const clicks = events.filter((e) => e.type === "click").length;
       const qr = events.filter((e) => e.source === "qr").length;
       setStats({ views, clicks, qr });
     });
-  }, [user]);
+  }, [uid]);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
 

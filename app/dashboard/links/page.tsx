@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,12 +21,9 @@ export default function LinksPage() {
   const [links, setLinks] = useState<CustomLink[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [initialized, setInitialized] = useState(false);
-
-  if (!initialized && profile) {
-    setLinks(profile.links || []);
-    setInitialized(true);
-  }
+  useEffect(() => {
+    if (profile) setLinks(profile.links || []);
+  }, [profile]);
 
   const addLink = () => setLinks((l) => [...l, newLink()]);
 

@@ -11,7 +11,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !authError && !user) router.push("/login");
-  }, [user, loading, authError, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading, authError]);
 
   if (authError) {
     return <BlockedBanner fullPage onRetry={retryAuth} />;

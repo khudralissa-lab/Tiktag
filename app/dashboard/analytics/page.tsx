@@ -49,8 +49,9 @@ export default function AnalyticsPage() {
   const [error, setError] = useState<"blocked" | "slow" | null>(null);
   const [retryKey, setRetryKey] = useState(0);
 
+  const uid = user?.uid;
   useEffect(() => {
-    if (!user) return;
+    if (!uid) return;
     setLoading(true);
     setError(null);
 
@@ -65,7 +66,7 @@ export default function AnalyticsPage() {
       }
     }, ANALYTICS_TIMEOUT_MS);
 
-    getAnalyticsEvents(user.uid, 30)
+    getAnalyticsEvents(uid, 30)
       .then((events) => {
         if (!settled) {
           clearTimeout(timeout);
@@ -85,7 +86,7 @@ export default function AnalyticsPage() {
       });
 
     return () => { clearTimeout(timeout); settled = true; };
-  }, [user, retryKey]);
+  }, [uid, retryKey]);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading analytics…</div>;
   if (error) return (
