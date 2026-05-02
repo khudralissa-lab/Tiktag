@@ -1,22 +1,29 @@
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import app from "./firebase";
+import { auth } from "./firebase";
 
-function getStorageInstance() {
-  return getStorage(app);
+async function uploadViaProxy(file: File, path: string): Promise<string> {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("path", path);
+  formData.append("token", token);
+
+  const res = await fetch("/api/upload", { method: "POST", body: formData });
+  if (!res.ok) {
+    const { error } = await res.json();
+    throw new Error(error || "Upload failed");
+  }
+  const { url } = await res.json();
+  return url as string;
 }
 
 export async function uploadProfilePhoto(uid: string, file: File): Promise<string> {
-  const storage = getStorageInstance();
   const ext = file.name.split(".").pop() ?? "jpg";
-  const storageRef = ref(storage, `avatars/${uid}.${ext}`);
-  await uploadBytes(storageRef, file, { contentType: file.type });
-  return getDownloadURL(storageRef);
+  return uploadViaProxy(file, `avatars/${uid}.${ext}`);
 }
 
 export async function uploadCoverPhoto(uid: string, file: File): Promise<string> {
-  const storage = getStorageInstance();
   const ext = file.name.split(".").pop() ?? "jpg";
-  const storageRef = ref(storage, `covers/${uid}.${ext}`);
-  await uploadBytes(storageRef, file, { contentType: file.type });
-  return getDownloadURL(storageRef);
+  return uploadViaProxy(file, `covers/${uid}.${ext}`);
 }
