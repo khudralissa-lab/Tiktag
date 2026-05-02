@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { Copy, CheckCircle2, ExternalLink } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
@@ -10,7 +10,7 @@ import QRCodeDisplay from "@/components/profile/QRCodeDisplay";
 import Link from "next/link";
 
 export default function QRPage() {
-  const { user } = useAuth();
+  const user = auth.currentUser;
   const { profile, loading, error, retry } = useProfile(user?.uid);
   const [copied, setCopied] = useState(false);
 

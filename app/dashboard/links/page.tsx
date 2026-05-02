@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { auth } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Link2, Phone, MessageCircle, Mail, Save, GripVertical } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
@@ -16,7 +16,7 @@ function newLink(): CustomLink {
 }
 
 export default function LinksPage() {
-  const { user } = useAuth();
+  const user = auth.currentUser;
   const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [links, setLinks] = useState<CustomLink[]>([]);
   const [saving, setSaving] = useState(false);

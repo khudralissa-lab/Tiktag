@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { Save, CheckCircle2 } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 import { THEME_LIST, getTheme } from "@/lib/themes";
 
 export default function ThemePage() {
-  const { user } = useAuth();
+  const user = auth.currentUser;
   const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [selected, setSelected] = useState("midnight");
   const [saving, setSaving] = useState(false);

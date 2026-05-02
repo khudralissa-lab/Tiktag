@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { auth } from "@/lib/firebase";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAnalyticsEvents } from "@/lib/firestore";
@@ -15,12 +15,10 @@ import BlockedBanner from "@/components/ui/BlockedBanner";
 import type { AnalyticsEvent } from "@/types";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
-  const { profile, loading, error, retry } = useProfile(user?.uid);
+  const uid = auth.currentUser?.uid;
+  const { profile, loading, error, retry } = useProfile(uid);
   const [stats, setStats] = useState({ views: 0, clicks: 0, qr: 0 });
   const [copied, setCopied] = useState(false);
-
-  const uid = user?.uid;
   useEffect(() => {
     if (!uid) return;
     getAnalyticsEvents(uid, 30).then((events: AnalyticsEvent[]) => {

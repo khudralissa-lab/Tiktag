@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { Save } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
@@ -20,7 +20,7 @@ const cls = "w-full px-4 py-3 rounded-xl text-white text-sm placeholder:text-whi
 const st = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
 
 export default function SocialPage() {
-  const { user } = useAuth();
+  const user = auth.currentUser;
   const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [form, setForm] = useState<Record<string, string>>({
     linkedin: "", instagram: "", facebook: "", tiktok: "", youtube: "", xTwitter: "",

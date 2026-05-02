@@ -1,13 +1,13 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const user = auth.currentUser;
   const { profile, loading, error, retry } = useProfile(user?.uid);
 
   if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;

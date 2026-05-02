@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { getAnalyticsEvents } from "@/lib/firestore";
+import { auth } from "@/lib/firebase";
 import { isFirebaseBlocked } from "@/lib/firebaseError";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
@@ -43,13 +43,11 @@ const COLORS = ["#6366f1", "#22d3ee", "#10b981"];
 const ANALYTICS_TIMEOUT_MS = 25000;
 
 export default function AnalyticsPage() {
-  const { user } = useAuth();
+  const uid = auth.currentUser?.uid;
   const [data, setData] = useState<ReturnType<typeof processEvents> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<"blocked" | "slow" | null>(null);
   const [retryKey, setRetryKey] = useState(0);
-
-  const uid = user?.uid;
   useEffect(() => {
     if (!uid) return;
     setLoading(true);

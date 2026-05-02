@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { Copy, CheckCircle2, ExternalLink, Package, CreditCard, Zap } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
@@ -15,7 +15,7 @@ const STATUS_STEPS = [
 ];
 
 export default function NFCPage() {
-  const { user } = useAuth();
+  const user = auth.currentUser;
   const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
