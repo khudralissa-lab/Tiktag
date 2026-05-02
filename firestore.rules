@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User profiles — owner can read/write their own document
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Username → uid lookup — anyone can read (needed for public profiles)
+    match /usernames/{username} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Analytics events — owner can read/write their own events
+    match /analytics/{uid}/events/{eventId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+  }
+}
