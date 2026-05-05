@@ -19,7 +19,7 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Build for Cloudflare Pages
-        run: npx @cloudflare/next-on-pages@1
+        run: npm run build:cloudflare
         env:
           NPM_CONFIG_LEGACY_PEER_DEPS: 'true'
           NEXT_PUBLIC_FIREBASE_API_KEY: AIzaSyCMQHQDG4-oquLDoiIkiGXlNNj4fsKgTN8
@@ -41,4 +41,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 60b229d24f5583dbae45676460243ef3
-          command: pages deploy .vercel/output/static --project-name=tapid --branch=master
+          command: pages deploy .open-next --project-name=tapid --branch=master
