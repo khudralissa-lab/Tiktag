@@ -28,6 +28,12 @@ jobs:
           NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: tiktag-4f3cb.firebasestorage.app
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '666070388795'
           NEXT_PUBLIC_FIREBASE_APP_ID: 1:666070388795:web:09354b81e8746da16e0c1e
+          VITE_FIREBASE_API_KEY: AIzaSyCMQHQDG4-oquLDoiIkiGXlNNj4fsKgTN8
+          VITE_FIREBASE_AUTH_DOMAIN: tiktag-4f3cb.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: tiktag-4f3cb
+          VITE_FIREBASE_STORAGE_BUCKET: tiktag-4f3cb.firebasestorage.app
+          VITE_FIREBASE_MESSAGING_SENDER_ID: '666070388795'
+          VITE_FIREBASE_APP_ID: 1:666070388795:web:09354b81e8746da16e0c1e
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Deploy to Cloudflare Pages
