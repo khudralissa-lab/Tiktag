@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
 
     if (!uploadRes.ok) {
       const text = await uploadRes.text();
-      return NextResponse.json({ error: `Storage error: ${text}` }, { status: uploadRes.status });
+      console.error(`[TikTag] Firebase Storage error ${uploadRes.status}:`, text);
+      return NextResponse.json({ error: `Storage upload failed (${uploadRes.status})` }, { status: 502 });
     }
 
     const data = await uploadRes.json() as { downloadTokens?: string; name?: string };

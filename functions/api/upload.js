@@ -13,6 +13,11 @@ export async function onRequestPost({ request, env }) {
     }
 
     const bucket = env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+    if (!bucket) {
+      console.error("[TikTag] NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not set in Cloudflare Pages env vars");
+      return Response.json({ error: "Storage not configured" }, { status: 500 });
+    }
+
     const encodedPath = encodeURIComponent(path);
     const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodedPath}`;
 
@@ -29,7 +34,8 @@ export async function onRequestPost({ request, env }) {
 
     if (!uploadRes.ok) {
       const text = await uploadRes.text();
-      return Response.json({ error: `Storage error: ${text}` }, { status: uploadRes.status });
+      console.error(`[TikTag] Firebase Storage error ${uploadRes.status}:`, text);
+      return Response.json({ error: `Storage upload failed (${uploadRes.status})` }, { status: 502 });
     }
 
     const data = await uploadRes.json();
