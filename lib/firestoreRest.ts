@@ -43,8 +43,8 @@ async function getDocument(
 }
 
 export async function getProfileByUsernameRest(username: string) {
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!;
-  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY!;
+  const projectId = process.env.VITE_FIREBASE_PROJECT_ID!;
+  const apiKey = process.env.VITE_FIREBASE_API_KEY!;
 
   const usernameDoc = await getDocument(projectId, apiKey, `usernames/${username}`);
   if (!usernameDoc) return null;

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File exceeds 5 MB limit" }, { status: 413 });
     }
 
-    const bucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!;
+    const bucket = process.env.VITE_FIREBASE_STORAGE_BUCKET!;
     const encodedPath = encodeURIComponent(path);
     const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodedPath}`;
 
