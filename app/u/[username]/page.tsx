@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 import PublicProfileClient from "./PublicProfileClient";
 import type { Metadata } from "next";
 
