@@ -10,7 +10,7 @@
 //
 // This script modifies .open-next/ in-place so wrangler can resolve all
 // relative imports in _worker.js from the same directory.
-import { cpSync, renameSync, existsSync } from "fs";
+import { cpSync, renameSync, existsSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -35,5 +35,15 @@ if (existsSync(assetsSrc)) {
   cpSync(assetsSrc, openNext, { recursive: true });
   console.log("prepare-pages: hoisted assets/ → .open-next/ root");
 }
+
+// _routes.json — exclude static assets from the worker so Pages CDN serves them directly.
+// Without this, ALL requests (including /_next/static/) go through _worker.js and CSS/JS fails.
+const routes = {
+  version: 1,
+  include: ["/*"],
+  exclude: ["/_next/static/*", "/BUILD_ID"],
+};
+writeFileSync(resolve(openNext, "_routes.json"), JSON.stringify(routes, null, 2));
+console.log("prepare-pages: wrote _routes.json");
 
 console.log("prepare-pages: done — deploy from .open-next/");
