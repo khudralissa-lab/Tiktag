@@ -1,5 +1,3 @@
-export const runtime = "nodejs";
-
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -16,7 +14,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File exceeds 5 MB limit" }, { status: 413 });
     }
 
-    const bucket = process.env.VITE_FIREBASE_STORAGE_BUCKET!;
+    const bucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!;
+    if (!bucket) {
+      console.error("[TikTag] NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not set");
+      return NextResponse.json({ error: "Storage not configured" }, { status: 500 });
+    }
     const encodedPath = encodeURIComponent(path);
     const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodedPath}`;
 

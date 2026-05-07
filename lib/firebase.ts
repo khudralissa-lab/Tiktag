@@ -1,4 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import type { Auth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -21,12 +22,11 @@ if (typeof window !== "undefined") {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// firebase/auth: runtime-only client import (no static import to avoid SSR crashes in CF Workers).
-// firebase/firestore: NOT exported here — lib/firestore.ts uses getFirebase() lazy imports.
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+// Static import of getAuth ensures firebase/auth component is registered before any usage.
+// Initialization is still guarded to client-only (typeof window) to avoid running auth
+// in the Cloudflare Workers SSR context where browser persistence APIs aren't available.
 export const auth: Auth = typeof window !== "undefined" && firebaseConfig.apiKey?.startsWith("AIza")
-  ? (require("firebase/auth") as typeof import("firebase/auth")).getAuth(app)
+  ? getAuth(app)
   : ({} as Auth);
 
 export default app;
