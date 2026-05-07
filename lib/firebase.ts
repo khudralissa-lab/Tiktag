@@ -21,12 +21,8 @@ if (typeof window !== "undefined") {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// firebase/auth is required at runtime only on the client — no static import so
-// SSR/edge workers never touch browser-only Auth APIs.
-// firebase/firestore is intentionally NOT exported from here; lib/firestore.ts
-// imports it lazily inside each function via getFirebase() to avoid the
-// "Service firestore is not available" error caused by calling getFirestore()
-// before the firestore chunk has finished registering its component.
+// firebase/auth: runtime-only client import (no static import to avoid SSR crashes in CF Workers).
+// firebase/firestore: NOT exported here — lib/firestore.ts uses getFirebase() lazy imports.
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 export const auth: Auth = typeof window !== "undefined" && firebaseConfig.apiKey?.startsWith("AIza")
