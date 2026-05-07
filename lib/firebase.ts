@@ -1,9 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import type { Auth } from "firebase/auth";
+import type { Firestore } from "firebase/firestore";
 
-// Only NEXT_PUBLIC_* vars are inlined by Next.js at build time.
-// VITE_* vars are never replaced and would produce undefined at runtime.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -13,7 +11,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Warn about missing config keys without crashing the page.
 if (typeof window !== "undefined") {
   const missing = Object.entries(firebaseConfig)
     .filter(([, v]) => !v)
@@ -25,10 +22,18 @@ if (typeof window !== "undefined") {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Only initialise Auth when a valid API key is present; avoids auth/invalid-api-key crash.
-export const auth =
-  typeof window !== "undefined" && firebaseConfig.apiKey?.startsWith("AIza")
-    ? getAuth(app)
-    : ({} as ReturnType<typeof getAuth>);
-export const db = getFirestore(app);
+// firebase/auth and firebase/firestore are never statically imported — they are
+// required at runtime only when running in the browser, so SSR/edge workers never
+// touch browser-only APIs (IndexedDB, etc.).
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+export const auth: Auth = typeof window !== "undefined" && firebaseConfig.apiKey?.startsWith("AIza")
+  ? (require("firebase/auth") as typeof import("firebase/auth")).getAuth(app)
+  : ({} as Auth);
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+export const db: Firestore = typeof window !== "undefined"
+  ? (require("firebase/firestore") as typeof import("firebase/firestore")).getFirestore(app)
+  : ({} as Firestore);
+
 export default app;

@@ -1,22 +1,17 @@
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  serverTimestamp,
-  orderBy,
-  limit,
-} from "firebase/firestore";
-import { db } from "./firebase";
 import type { UserProfile, AnalyticsEvent } from "@/types";
 
+// All firebase/firestore imports are lazy — called only when a function is invoked
+// so the module is never evaluated during SSR/edge rendering.
+async function getFirebase() {
+  const [firestoreModule, { default: app }] = await Promise.all([
+    import("firebase/firestore"),
+    import("./firebase"),
+  ]);
+  return { ...firestoreModule, db: firestoreModule.getFirestore(app) };
+}
+
 export async function createUserProfile(uid: string, data: Partial<UserProfile>) {
+  const { doc, setDoc, db } = await getFirebase();
   await setDoc(doc(db, "users", uid), {
     ...data,
     uid,
@@ -32,11 +27,13 @@ export async function createUserProfile(uid: string, data: Partial<UserProfile>)
 }
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
+  const { doc, getDoc, db } = await getFirebase();
   const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? (snap.data() as UserProfile) : null;
 }
 
 export async function getProfileByUsername(username: string): Promise<UserProfile | null> {
+  const { doc, getDoc, db } = await getFirebase();
   const usernameDoc = await getDoc(doc(db, "usernames", username));
   if (!usernameDoc.exists()) return null;
   const { uid } = usernameDoc.data();
@@ -44,15 +41,18 @@ export async function getProfileByUsername(username: string): Promise<UserProfil
 }
 
 export async function updateUserProfile(uid: string, data: Partial<UserProfile>) {
+  const { doc, updateDoc, db } = await getFirebase();
   await updateDoc(doc(db, "users", uid), data as Record<string, unknown>);
 }
 
 export async function isUsernameAvailable(username: string): Promise<boolean> {
+  const { doc, getDoc, db } = await getFirebase();
   const snap = await getDoc(doc(db, "usernames", username));
   return !snap.exists();
 }
 
 export async function updateUsername(uid: string, oldUsername: string, newUsername: string): Promise<void> {
+  const { doc, setDoc, updateDoc, deleteDoc, db } = await getFirebase();
   if (oldUsername && oldUsername !== newUsername) {
     await deleteDoc(doc(db, "usernames", oldUsername));
   }
@@ -61,6 +61,7 @@ export async function updateUsername(uid: string, oldUsername: string, newUserna
 }
 
 export async function trackEvent(uid: string, event: AnalyticsEvent) {
+  const { collection, addDoc, db } = await getFirebase();
   await addDoc(collection(db, "analytics", uid, "events"), {
     ...event,
     timestamp: Date.now(),
@@ -68,6 +69,7 @@ export async function trackEvent(uid: string, event: AnalyticsEvent) {
 }
 
 export async function getAnalyticsEvents(uid: string, days = 30) {
+  const { collection, query, where, getDocs, orderBy, limit, db } = await getFirebase();
   const since = Date.now() - days * 24 * 60 * 60 * 1000;
   const q = query(
     collection(db, "analytics", uid, "events"),
