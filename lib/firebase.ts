@@ -27,7 +27,6 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 // imports it lazily inside each function via getFirebase() to avoid the
 // "Service firestore is not available" error caused by calling getFirestore()
 // before the firestore chunk has finished registering its component.
-// Cache-bust: env vars now set in Cloudflare Pages — 2026-05-07
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 export const auth: Auth = typeof window !== "undefined" && firebaseConfig.apiKey?.startsWith("AIza")
