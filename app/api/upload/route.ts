@@ -37,12 +37,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Step 2: resolve bucket
-  const bucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+  // Fallback keeps the route working even when NEXT_PUBLIC_* is not inlined
+  // by Cloudflare's build (env var must also be set in Pages dashboard).
+  const bucket =
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+    "tiktag-4f3cb.firebasestorage.app";
   console.log("[upload] bucket:", bucket);
-  if (!bucket) {
-    console.error("[upload] NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not set");
-    return NextResponse.json({ error: "Storage not configured — env var missing" }, { status: 500 });
-  }
 
   // Step 3: build Firebase Storage simple-upload URL
   // path like "avatars/uid.jpg" → encodeURIComponent → "avatars%2Fuid.jpg"
