@@ -4,18 +4,24 @@ async function uploadViaProxy(file: File, path: string): Promise<string> {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error("Not authenticated");
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("path", path);
-  formData.append("token", token);
+  // Send file as raw binary body; pass metadata in headers.
+  // Avoids multipart/form-data which crashes OpenNext's routing layer in
+  // Cloudflare Workers before the route handler is reached.
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+      "x-firebase-token": token,
+      "x-upload-path": path,
+    },
+    body: file,
+  });
 
-  const res = await fetch("/api/upload", { method: "POST", body: formData });
+  const data = await res.json();
   if (!res.ok) {
-    const { error } = await res.json();
-    throw new Error(error || "Upload failed");
+    throw new Error(data?.error || `Upload failed (${res.status})`);
   }
-  const { url } = await res.json();
-  return url as string;
+  return data.url as string;
 }
 
 export async function uploadProfilePhoto(uid: string, file: File): Promise<string> {

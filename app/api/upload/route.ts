@@ -1,75 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  // Step 1: parse multipart form data
-  let formData: FormData;
+  console.log("[upload] request received");
+
+  // Read upload metadata from headers — avoids multipart parsing which can
+  // crash the OpenNext/Cloudflare routing layer before the handler runs.
+  const token = req.headers.get("x-firebase-token");
+  const path = req.headers.get("x-upload-path");
+  const contentType = req.headers.get("content-type") || "application/octet-stream";
+
+  console.log("[upload] path:", path, "token present:", !!token, "content-type:", contentType);
+
+  if (!token || !path) {
+    return NextResponse.json(
+      { error: "Missing x-firebase-token or x-upload-path header", hasToken: !!token, hasPath: !!path },
+      { status: 400 },
+    );
+  }
+
+  // Read file bytes directly from request body (no multipart overhead)
+  let body: ArrayBuffer;
   try {
-    formData = await req.formData();
+    body = await req.arrayBuffer();
   } catch (err) {
-    console.error("[upload] formData parse failed:", err);
+    console.error("[upload] arrayBuffer failed:", err);
     return NextResponse.json(
-      { error: "Failed to parse request body", detail: String(err) },
-      { status: 400 },
+      { error: "Failed to read request body", detail: String(err) },
+      { status: 500 },
     );
   }
 
-  const file = formData.get("file") as File | null;
-  const path = formData.get("path") as string | null;
-  const token = formData.get("token") as string | null;
+  console.log("[upload] body bytes:", body.byteLength);
 
-  console.log(
-    "[upload] fields — name:", file?.name,
-    "size:", file?.size,
-    "type:", file?.type,
-    "path:", path,
-    "token present:", !!token,
-    "token prefix:", token?.slice(0, 20),
-  );
-
-  if (!file || !path || !token) {
-    return NextResponse.json(
-      { error: "Missing required fields", hasFile: !!file, hasPath: !!path, hasToken: !!token },
-      { status: 400 },
-    );
+  if (body.byteLength === 0) {
+    return NextResponse.json({ error: "Empty file body" }, { status: 400 });
   }
-  if (file.size > 5 * 1024 * 1024) {
+  if (body.byteLength > 5 * 1024 * 1024) {
     return NextResponse.json({ error: "File exceeds 5 MB limit" }, { status: 413 });
   }
 
-  // Step 2: resolve bucket
-  // Fallback keeps the route working even when NEXT_PUBLIC_* is not inlined
-  // by Cloudflare's build (env var must also be set in Pages dashboard).
+  // Resolve bucket — fallback ensures this works even when the env var is not
+  // inlined by Cloudflare's build infrastructure.
   const bucket =
     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
     "tiktag-4f3cb.firebasestorage.app";
   console.log("[upload] bucket:", bucket);
 
-  // Step 3: build Firebase Storage simple-upload URL
-  // path like "avatars/uid.jpg" → encodeURIComponent → "avatars%2Fuid.jpg"
   const encodedPath = encodeURIComponent(path);
   const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodedPath}`;
   console.log("[upload] uploadUrl:", uploadUrl);
 
-  // Step 4: read file bytes
-  let body: ArrayBuffer;
-  try {
-    body = await file.arrayBuffer();
-  } catch (err) {
-    console.error("[upload] arrayBuffer failed:", err);
-    return NextResponse.json(
-      { error: "Failed to read file bytes", detail: String(err) },
-      { status: 500 },
-    );
-  }
-  console.log("[upload] body bytes:", body.byteLength, "content-type:", file.type);
-
-  // Step 5: POST raw bytes to Firebase Storage REST API
+  // POST raw bytes to Firebase Storage REST API
   let uploadRes: Response;
   try {
     uploadRes = await fetch(uploadUrl, {
       method: "POST",
       headers: {
-        "Content-Type": file.type || "application/octet-stream",
+        "Content-Type": contentType,
         "Authorization": `Firebase ${token}`,
       },
       body,
@@ -82,12 +69,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Always read the response body so Firebase's error message is visible
   const responseText = await uploadRes.text();
-  console.log("[upload] Firebase Storage response:", uploadRes.status, responseText.slice(0, 600));
+  console.log("[upload] Firebase response:", uploadRes.status, responseText.slice(0, 600));
 
   if (!uploadRes.ok) {
-    // Return Firebase's exact error so the client (and we) can see what went wrong
     return NextResponse.json(
       {
         error: "Firebase Storage rejected the upload",
@@ -98,21 +83,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Step 6: parse Firebase response and build public download URL
   let data: { downloadTokens?: string; name?: string };
   try {
     data = JSON.parse(responseText);
-  } catch (err) {
-    console.error("[upload] JSON parse of Firebase response failed:", responseText);
+  } catch {
+    console.error("[upload] JSON parse failed:", responseText);
     return NextResponse.json(
-      { error: "Unexpected response format from Firebase Storage", raw: responseText },
+      { error: "Unexpected response from Firebase Storage", raw: responseText },
       { status: 502 },
     );
   }
 
   const downloadToken = data.downloadTokens ?? "";
   const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media&token=${downloadToken}`;
-  console.log("[upload] success — url:", url);
+  console.log("[upload] success, url:", url);
 
   return NextResponse.json({ url });
 }
