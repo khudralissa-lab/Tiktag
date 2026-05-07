@@ -1,35 +1,27 @@
 import { auth } from "./firebase";
+import app from "./firebase";
 
-async function uploadViaProxy(file: File, path: string): Promise<string> {
-  const token = await auth.currentUser?.getIdToken();
-  if (!token) throw new Error("Not authenticated");
+// Upload directly from the browser to Firebase Storage via the official SDK.
+// This bypasses the /api/upload proxy route entirely — no Cloudflare Worker
+// involvement means no OpenNext body-handling issues and no 502 errors.
+async function uploadDirect(file: File, path: string): Promise<string> {
+  if (!auth.currentUser) throw new Error("Not authenticated");
 
-  // Send file as raw binary body; pass metadata in headers.
-  // Avoids multipart/form-data which crashes OpenNext's routing layer in
-  // Cloudflare Workers before the route handler is reached.
-  const res = await fetch("/api/upload", {
-    method: "POST",
-    headers: {
-      "Content-Type": file.type || "application/octet-stream",
-      "x-firebase-token": token,
-      "x-upload-path": path,
-    },
-    body: file,
-  });
+  // Dynamic import keeps firebase/storage out of server/Worker bundles.
+  const { getStorage, ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.error || `Upload failed (${res.status})`);
-  }
-  return data.url as string;
+  const storage = getStorage(app);
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file, { contentType: file.type || "application/octet-stream" });
+  return getDownloadURL(storageRef);
 }
 
 export async function uploadProfilePhoto(uid: string, file: File): Promise<string> {
   const ext = file.name.split(".").pop() ?? "jpg";
-  return uploadViaProxy(file, `avatars/${uid}.${ext}`);
+  return uploadDirect(file, `avatars/${uid}.${ext}`);
 }
 
 export async function uploadCoverPhoto(uid: string, file: File): Promise<string> {
   const ext = file.name.split(".").pop() ?? "jpg";
-  return uploadViaProxy(file, `covers/${uid}.${ext}`);
+  return uploadDirect(file, `covers/${uid}.${ext}`);
 }
