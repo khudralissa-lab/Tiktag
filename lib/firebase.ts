@@ -1,6 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
 import type { Auth } from "firebase/auth";
-import type { Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,18 +21,16 @@ if (typeof window !== "undefined") {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// firebase/auth and firebase/firestore are never statically imported — they are
-// required at runtime only when running in the browser, so SSR/edge workers never
-// touch browser-only APIs (IndexedDB, etc.).
+// firebase/auth is required at runtime only on the client — no static import so
+// SSR/edge workers never touch browser-only Auth APIs.
+// firebase/firestore is intentionally NOT exported from here; lib/firestore.ts
+// imports it lazily inside each function via getFirebase() to avoid the
+// "Service firestore is not available" error caused by calling getFirestore()
+// before the firestore chunk has finished registering its component.
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 export const auth: Auth = typeof window !== "undefined" && firebaseConfig.apiKey?.startsWith("AIza")
   ? (require("firebase/auth") as typeof import("firebase/auth")).getAuth(app)
   : ({} as Auth);
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-export const db: Firestore = typeof window !== "undefined"
-  ? (require("firebase/firestore") as typeof import("firebase/firestore")).getFirestore(app)
-  : ({} as Firestore);
 
 export default app;
