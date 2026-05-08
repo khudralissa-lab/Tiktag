@@ -1,3 +1,13 @@
+export interface MediaItem {
+  id: string;
+  type: "image" | "video";
+  url: string;
+  thumbnailUrl?: string;
+  caption?: string;
+  featured?: boolean;
+  order?: number;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -33,6 +43,10 @@ export interface UserProfile {
   socials?: Social[];
   // Links
   links: CustomLink[];
+  // Media
+  media?: MediaItem[];
+  // Booking
+  bookingUrl?: string;
   // Appearance
   accentColor: string;
   theme?: string;

@@ -4,15 +4,19 @@ import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
-import { Save, CheckCircle2 } from "lucide-react";
+import { Save, CheckCircle2, Palette } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 import PageSkeleton from "@/components/ui/PageSkeleton";
 import { THEME_LIST, getTheme } from "@/lib/themes";
+
+const spr = { type: "spring" as const, stiffness: 260, damping: 22 };
+type Filter = "all" | "dark" | "light";
 
 export default function ThemePage() {
   const user = auth.currentUser;
   const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [selected, setSelected] = useState("midnight");
+  const [filter, setFilter] = useState<Filter>("all");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -31,100 +35,202 @@ export default function ThemePage() {
   if (loading) return <PageSkeleton rows={4} />;
 
   const currentTheme = getTheme(selected);
+  const filteredThemes = THEME_LIST.filter((t) =>
+    filter === "all" ? true : t.category === filter
+  );
 
   return (
-    <div className="p-4 md:p-8 max-w-2xl">
+    <div className="p-5 md:p-8 max-w-5xl">
       {error && <BlockedBanner errorType={error} onRetry={retry} />}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-        <h1 className="text-2xl font-semibold text-white mb-1">Theme</h1>
-        <p className="text-white/35 text-sm">Choose the look of your public profile.</p>
+
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={spr} className="mb-8">
+        <div className="flex items-center gap-3 mb-1">
+          <div
+            className="w-8 h-8 rounded-[10px] flex items-center justify-center"
+            style={{ background: "rgba(99,102,241,0.18)", border: "1px solid rgba(99,102,241,0.25)" }}
+          >
+            <Palette className="w-4 h-4 text-indigo-400" />
+          </div>
+          <h1 className="text-[22px] font-bold text-white tracking-[-0.025em]">Theme Engine</h1>
+        </div>
+        <p className="text-white/35 text-sm">Choose the visual identity for your public profile.</p>
       </motion.div>
 
+      {/* Filter tabs */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.08 }}
-        className="mt-8"
+        transition={{ ...spr, delay: 0.06 }}
+        className="mb-6"
       >
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {THEME_LIST.map((theme) => {
-            const active = selected === theme.key;
-            return (
-              <button
-                key={theme.key}
-                onClick={() => setSelected(theme.key)}
-                className="relative p-4 rounded-2xl text-left transition-all duration-200"
-                style={{
-                  background: "rgba(255,255,255,0.02)",
-                  border: `1px solid ${active ? theme.accent : "rgba(255,255,255,0.06)"}`,
-                  boxShadow: active ? `0 0 0 1px ${theme.accent}40` : "none",
-                }}
-              >
-                <div
-                  className="w-full h-14 rounded-xl mb-3"
-                  style={{ background: theme.preview }}
-                />
-                <p className="text-white text-xs font-medium">{theme.name}</p>
-                <div className="flex items-center gap-1 mt-1.5">
-                  <div className="w-3 h-3 rounded-full border border-white/10" style={{ background: theme.background }} />
-                  <div className="w-3 h-3 rounded-full" style={{ background: theme.accent }} />
-                  <div className="w-3 h-3 rounded-full" style={{ background: theme.surface }} />
-                </div>
-                {active && (
-                  <CheckCircle2
-                    className="absolute top-3 right-3 w-4 h-4"
-                    style={{ color: theme.accent }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Live preview */}
         <div
-          className="mt-6 p-5 rounded-2xl"
-          style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
+          className="inline-flex gap-1 p-1 rounded-xl"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <p className="text-[11px] text-white/38 uppercase tracking-widest font-medium mb-4">Preview</p>
+          {(["all", "dark", "light"] as Filter[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className="px-4 py-1.5 rounded-lg text-[12.5px] font-medium transition-all capitalize"
+              style={
+                filter === f
+                  ? { background: "#6366f1", color: "#fff" }
+                  : { color: "rgba(255,255,255,0.38)" }
+              }
+            >
+              {f === "all" ? "All Themes" : f === "dark" ? "Dark" : "Light"}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Theme grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        {filteredThemes.map((theme, i) => {
+          const active = selected === theme.key;
+          return (
+            <motion.button
+              key={theme.key}
+              onClick={() => setSelected(theme.key)}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spr, delay: 0.08 + i * 0.04 }}
+              whileHover={{ y: -3, scale: 1.005 }}
+              whileTap={{ scale: 0.98 }}
+              className="relative text-left rounded-[20px] overflow-hidden transition-shadow"
+              style={{
+                background: "rgba(255,255,255,0.025)",
+                border: `1px solid ${active ? theme.accent : "rgba(255,255,255,0.06)"}`,
+                boxShadow: active
+                  ? `0 0 0 1px ${theme.accent}40, 0 8px 32px ${theme.accent}18`
+                  : "none",
+              }}
+            >
+              {/* Gradient preview swatch */}
+              <div className="w-full h-[88px] relative overflow-hidden" style={{ background: theme.preview }}>
+                <div className="absolute inset-0 flex items-end p-3.5 gap-2">
+                  <div
+                    className="w-7 h-7 rounded-full shrink-0"
+                    style={{
+                      background: theme.accent,
+                      boxShadow: `0 4px 18px ${theme.accent}70`,
+                    }}
+                  />
+                  <div className="flex flex-col gap-1 flex-1">
+                    <div className="h-1.5 rounded-full w-3/4" style={{ background: theme.text, opacity: 0.35 }} />
+                    <div className="h-1.5 rounded-full w-1/2" style={{ background: theme.text, opacity: 0.18 }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-0.5">
+                  <p className="text-white/88 text-[13.5px] font-semibold leading-tight">{theme.name}</p>
+                  {active && (
+                    <CheckCircle2 className="w-[15px] h-[15px] shrink-0 ml-1" style={{ color: theme.accent }} />
+                  )}
+                </div>
+                <p className="text-white/30 text-[11.5px] leading-snug mt-0.5">{theme.tagline}</p>
+                <div className="flex items-center gap-1.5 mt-3">
+                  <div
+                    className="w-3.5 h-3.5 rounded-full"
+                    style={{ background: theme.background, border: "1px solid rgba(255,255,255,0.10)" }}
+                  />
+                  <div className="w-3.5 h-3.5 rounded-full" style={{ background: theme.accent }} />
+                  <div
+                    className="w-3.5 h-3.5 rounded-full"
+                    style={{ background: theme.surface, border: "1px solid rgba(255,255,255,0.08)" }}
+                  />
+                  <span
+                    className="ml-1.5 text-[9.5px] font-bold uppercase tracking-[0.12em] px-1.5 py-0.5 rounded-[4px]"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      color: "rgba(255,255,255,0.22)",
+                    }}
+                  >
+                    {theme.category}
+                  </span>
+                </div>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Live preview */}
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...spr, delay: 0.22 }}
+        className="rounded-[20px] p-6 mb-6"
+        style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <p className="text-[11px] text-white/38 uppercase tracking-widest font-medium mb-5">Live Preview</p>
+        <div className="max-w-[240px] mx-auto">
           <div
-            className="rounded-2xl p-5 max-w-[200px] mx-auto transition-all duration-500"
+            className="rounded-[22px] overflow-hidden transition-all duration-500"
             style={{ background: currentTheme.background, border: `1px solid ${currentTheme.border}` }}
           >
-            <div className="flex flex-col items-center gap-2 mb-4">
+            {/* Mini hero */}
+            <div className="h-16 relative overflow-hidden" style={{ background: currentTheme.surface }}>
               <div
-                className="w-12 h-12 rounded-full"
-                style={{ background: `${currentTheme.accent}22`, border: `2px solid ${currentTheme.accent}` }}
+                className="absolute inset-0"
+                style={{
+                  background: `radial-gradient(ellipse 80% 100% at 50% -10%, ${currentTheme.accent}45 0%, transparent 70%)`,
+                }}
               />
-              <div className="text-center">
-                <div className="w-20 h-2.5 rounded mx-auto" style={{ background: currentTheme.text, opacity: 0.8 }} />
-                <div className="w-14 h-1.5 rounded mt-1.5 mx-auto" style={{ background: currentTheme.subtext, opacity: 0.6 }} />
-              </div>
+              <div
+                className="absolute top-0 left-0 right-0 h-px"
+                style={{
+                  background: `linear-gradient(90deg, transparent, ${currentTheme.accent}60 50%, transparent)`,
+                }}
+              />
             </div>
-            <div className="space-y-1.5">
-              {[0, 1].map((i) => (
-                <div
-                  key={i}
-                  className="w-full h-8 rounded-lg"
-                  style={{ background: currentTheme.buttonBg, border: `1px solid ${currentTheme.border}` }}
-                />
-              ))}
+            {/* Content */}
+            <div className="flex flex-col items-center px-5 -mt-6 pb-5">
+              <div
+                className="w-12 h-12 rounded-full mb-3"
+                style={{
+                  background: `${currentTheme.accent}22`,
+                  border: `2.5px solid ${currentTheme.background}`,
+                  boxShadow: `0 0 0 1.5px ${currentTheme.accent}55`,
+                }}
+              />
+              <div className="w-20 h-2.5 rounded mb-1.5 transition-all duration-500" style={{ background: currentTheme.text, opacity: 0.75 }} />
+              <div className="w-14 h-1.5 rounded mb-5 transition-all duration-500" style={{ background: currentTheme.accent, opacity: 0.6 }} />
+              <div
+                className="w-full h-9 rounded-[12px] mb-2.5 transition-all duration-500"
+                style={{ background: currentTheme.accent, opacity: 0.88 }}
+              />
+              <div className="grid grid-cols-3 gap-1.5 w-full">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="h-11 rounded-xl transition-all duration-500"
+                    style={{
+                      background: currentTheme.buttonBg,
+                      border: `1px solid ${currentTheme.border}`,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
-
-        <div className="mt-6">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all disabled:opacity-50"
-            style={{ background: saved ? "#10b981" : "#6366f1" }}
-          >
-            <Save className="w-4 h-4" />
-            {saved ? "Saved!" : saving ? "Saving…" : "Save Theme"}
-          </button>
-        </div>
       </motion.div>
+
+      {/* Save */}
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="flex items-center gap-2 px-6 py-3 rounded-[14px] text-white text-sm font-semibold transition-all duration-300 disabled:opacity-50"
+        style={{ background: saved ? "#10b981" : "#6366f1" }}
+      >
+        <Save className="w-4 h-4" />
+        {saved ? "Theme Applied!" : saving ? "Saving…" : "Apply Theme"}
+      </button>
     </div>
   );
 }

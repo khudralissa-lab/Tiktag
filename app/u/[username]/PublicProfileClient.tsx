@@ -7,11 +7,12 @@ import {
   Phone, MessageCircle, Mail, UserPlus,
   Globe, MapPin, Building2, Share2, QrCode,
   ChevronRight, Link2, Download, ChevronDown, ArrowUpRight,
+  Calendar, Play, X, ChevronLeft,
 } from "lucide-react";
 import { trackProfileView, trackButtonClick } from "@/lib/analytics";
 import { generateVCard, downloadVCard } from "@/lib/utils";
 import { getTheme } from "@/lib/themes";
-import type { UserProfile, CustomLink } from "@/types";
+import type { UserProfile, CustomLink, MediaItem } from "@/types";
 
 // ─── Brand SVG paths ─────────────────────────────────────────────────────────
 
@@ -226,6 +227,7 @@ export default function PublicProfileClient({
   const [notFound, setNotFound] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [bioExpanded, setBioExpanded] = useState(false);
+  const [mediaModal, setMediaModal] = useState<{ items: MediaItem[]; index: number } | null>(null);
 
   useEffect(() => {
     if (profile || !username) return;
@@ -541,6 +543,31 @@ export default function PublicProfileClient({
             <span className="relative z-10">Save Contact</span>
           </motion.button>
 
+          {/* Booking CTA */}
+          {profile.bookingUrl && (
+            <motion.a
+              href={profile.bookingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackButtonClick(profile.uid, "Book a Meeting")}
+              whileTap={{ scale: 0.974 }}
+              whileHover={{ scale: 1.009 }}
+              className="w-full flex items-center justify-center gap-3 rounded-[20px] font-semibold"
+              style={{
+                padding: "18px 28px",
+                fontSize: "16px",
+                letterSpacing: "-0.015em",
+                color: theme.accent,
+                background: `${theme.accent}10`,
+                border: `1.5px solid ${theme.accent}35`,
+                boxShadow: `0 4px 24px ${theme.accent}14`,
+              }}
+            >
+              <Calendar className="w-[18px] h-[18px] shrink-0" />
+              Book a Meeting
+            </motion.a>
+          )}
+
           {/* Contact tiles */}
           {contactTiles.length > 0 && (
             <div className={`grid gap-3 ${tilesCols(contactTiles.length)}`}>
@@ -828,6 +855,74 @@ export default function PublicProfileClient({
         )}
 
         {/* ══════════════════════════════════════════════
+            MEDIA SHOWCASE
+        ══════════════════════════════════════════════ */}
+        {(profile.media ?? []).length > 0 && (() => {
+          const allMedia = profile.media!;
+          const featured = allMedia.filter((m) => m.featured);
+          const rest = allMedia.filter((m) => !m.featured);
+          const ordered = [...featured, ...rest].slice(0, 6);
+          return (
+            <>
+              <Divider color={theme.border} />
+              <Reveal>
+                <SectionLabel color={theme.subtext}>Portfolio</SectionLabel>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {ordered.map((item, i) => (
+                    <motion.button
+                      key={item.id}
+                      onClick={() => setMediaModal({ items: ordered, index: i })}
+                      whileHover={{ scale: 1.025, y: -3 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="relative overflow-hidden rounded-[16px] aspect-square"
+                      initial={{ opacity: 0, scale: 0.92 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ type: "spring", stiffness: 300, damping: 22, delay: i * 0.06 }}
+                      style={{
+                        background: `${theme.accent}10`,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      {item.type === "video" ? (
+                        <>
+                          {item.thumbnailUrl ? (
+                            <Image src={item.thumbnailUrl} alt={item.caption || "Video"} fill
+                              className="object-cover" unoptimized />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center"
+                              style={{ background: `${theme.accent}12` }}>
+                              <Play className="w-8 h-8" style={{ color: `${theme.accent}70` }} />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center"
+                              style={{ background: "rgba(0,0,0,0.60)", border: "1px solid rgba(255,255,255,0.22)" }}>
+                              <Play className="w-4 h-4 text-white ml-0.5" />
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <Image src={item.url} alt={item.caption || "Media"} fill
+                          className="object-cover" unoptimized />
+                      )}
+                      {item.featured && (
+                        <div className="absolute top-2 left-2 w-5 h-5 rounded-full flex items-center justify-center"
+                          style={{ background: "rgba(0,0,0,0.55)" }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="#fbbf24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
+              </Reveal>
+            </>
+          );
+        })()}
+
+        {/* ══════════════════════════════════════════════
             CONNECT / QR
         ══════════════════════════════════════════════ */}
         <Divider color={theme.border} />
@@ -934,6 +1029,94 @@ export default function PublicProfileClient({
         </p>
 
       </div>
+
+      {/* ══════════════════════════════════════════════
+          MEDIA MODAL
+      ══════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {mediaModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(18px)" }}
+            onClick={() => setMediaModal(null)}
+          >
+            {/* Close */}
+            <button
+              className="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center z-10"
+              style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.14)" }}
+              onClick={() => setMediaModal(null)}
+            >
+              <X className="w-4 h-4 text-white/75" />
+            </button>
+
+            {/* Prev */}
+            {mediaModal.index > 0 && (
+              <button
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-10"
+                style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.14)" }}
+                onClick={(e) => { e.stopPropagation(); setMediaModal((m) => m && ({ ...m, index: m.index - 1 })); }}
+              >
+                <ChevronLeft className="w-4 h-4 text-white/75" />
+              </button>
+            )}
+
+            {/* Next */}
+            {mediaModal.index < mediaModal.items.length - 1 && (
+              <button
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-10"
+                style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.14)" }}
+                onClick={(e) => { e.stopPropagation(); setMediaModal((m) => m && ({ ...m, index: m.index + 1 })); }}
+              >
+                <ChevronRight className="w-4 h-4 text-white/75" />
+              </button>
+            )}
+
+            {/* Media content */}
+            <motion.div
+              key={mediaModal.index}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 320, damping: 26 }}
+              className="relative max-w-[90vw] max-h-[85vh] flex flex-col items-center gap-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {mediaModal.items[mediaModal.index].type === "video" ? (
+                <video
+                  src={mediaModal.items[mediaModal.index].url}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[75vh] rounded-[20px]"
+                  style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.7)" }}
+                />
+              ) : (
+                <div className="relative max-w-full max-h-[75vh] overflow-hidden rounded-[20px]"
+                  style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.7)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={mediaModal.items[mediaModal.index].url}
+                    alt={mediaModal.items[mediaModal.index].caption || "Media"}
+                    className="block max-w-[90vw] max-h-[75vh] object-contain"
+                  />
+                </div>
+              )}
+              {mediaModal.items[mediaModal.index].caption && (
+                <p className="text-white/50 text-sm text-center px-4">
+                  {mediaModal.items[mediaModal.index].caption}
+                </p>
+              )}
+              <p className="text-white/22 text-xs">
+                {mediaModal.index + 1} / {mediaModal.items.length}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

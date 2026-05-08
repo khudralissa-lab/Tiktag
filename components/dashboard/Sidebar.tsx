@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, User, Phone, Building2, Globe, Link2,
-  QrCode, Nfc, Palette, TrendingUp, Settings, LogOut, Zap, X,
+  QrCode, Nfc, Palette, TrendingUp, Settings, LogOut, Zap, X, Images,
 } from "lucide-react";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean; badge?: string };
@@ -32,7 +32,8 @@ const NAV: Section[] = [
   {
     label: "Content",
     items: [
-      { href: "/dashboard/links", label: "Custom Links", icon: Link2 },
+      { href: "/dashboard/links", label: "Custom Links", icon: Link2   },
+      { href: "/dashboard/media", label: "Media",        icon: Images  },
     ],
   },
   {

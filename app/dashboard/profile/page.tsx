@@ -150,7 +150,7 @@ export default function ProfilePage() {
   const user = auth.currentUser;
   const { profile, loading, error, retry, update } = useProfile(user?.uid);
   const [form, setForm] = useState({
-    displayName: "", title: "", bio: "", photoURL: "", coverPhotoUrl: "", location: "",
+    displayName: "", title: "", bio: "", photoURL: "", coverPhotoUrl: "", location: "", bookingUrl: "",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -166,6 +166,7 @@ export default function ProfilePage() {
       photoURL: profile.photoURL || "",
       coverPhotoUrl: profile.coverPhotoUrl || "",
       location: profile.location || "",
+      bookingUrl: profile.bookingUrl || "",
     });
   }, [profile]);
 
@@ -259,6 +260,12 @@ export default function ProfilePage() {
         <div>
           <label className="block text-[11px] text-white/38 mb-1.5 uppercase tracking-widest font-medium">Location</label>
           <input value={form.location} onChange={set("location")} className={cls} style={st} placeholder="Dubai, UAE" />
+        </div>
+
+        <div>
+          <label className="block text-[11px] text-white/38 mb-1.5 uppercase tracking-widest font-medium">Booking Link</label>
+          <input value={form.bookingUrl} onChange={set("bookingUrl")} className={cls} style={st} placeholder="https://cal.com/yourname" />
+          <p className="text-white/20 text-[11px] mt-1.5">Calendly, Cal.com, or any scheduling link — shown as a button on your profile.</p>
         </div>
 
         <div>
