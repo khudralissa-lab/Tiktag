@@ -104,7 +104,7 @@ export default function PublicProfileClient({ username, profile: initialProfile 
   const profileUrl =
     typeof window !== "undefined"
       ? window.location.href
-      : `https://tiktag.io/u/${profile.username}`;
+      : `https://tiktag.pages.dev/u/${profile.username}`;
 
   const handleAction = (label: string, href: string) => {
     trackButtonClick(profile.uid, label);
