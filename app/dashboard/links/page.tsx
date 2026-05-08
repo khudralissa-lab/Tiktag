@@ -6,6 +6,7 @@ import { auth } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Link2, Phone, MessageCircle, Mail, Save, GripVertical } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
+import PageSkeleton from "@/components/ui/PageSkeleton";
 import type { CustomLink } from "@/types";
 
 const TYPE_ICONS = { url: Link2, call: Phone, whatsapp: MessageCircle, email: Mail };
@@ -40,10 +41,10 @@ export default function LinksPage() {
     setTimeout(() => setSaved(false), 2500);
   };
 
-  if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (loading) return <PageSkeleton rows={4} />;
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 md:p-8 max-w-2xl">
       {error && <BlockedBanner errorType={error} onRetry={retry} />}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <div className="flex items-start justify-between mb-1">

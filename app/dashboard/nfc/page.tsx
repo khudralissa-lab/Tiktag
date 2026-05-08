@@ -6,6 +6,7 @@ import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { Copy, CheckCircle2, ExternalLink, Package, CreditCard, Zap } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
+import PageSkeleton from "@/components/ui/PageSkeleton";
 import Link from "next/link";
 
 const STATUS_STEPS = [
@@ -20,9 +21,9 @@ export default function NFCPage() {
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (loading) return <PageSkeleton rows={4} />;
 
-  const profileUrl = profile?.username ? `https://tiktag.io/u/${profile.username}` : null;
+  const profileUrl = profile?.username ? `https://tiktag.pages.dev/u/${profile.username}` : null;
   const status = profile?.nfcStatus || "not_ordered";
   const stepIndex = STATUS_STEPS.findIndex((s) => s.key === status);
 
@@ -40,7 +41,7 @@ export default function NFCPage() {
   };
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 md:p-8 max-w-2xl">
       {error && <BlockedBanner errorType={error} onRetry={retry} />}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <h1 className="text-2xl font-semibold text-white mb-1">NFC Setup</h1>

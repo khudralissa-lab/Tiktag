@@ -6,6 +6,7 @@ import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { Save } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
+import PageSkeleton from "@/components/ui/PageSkeleton";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -48,10 +49,10 @@ export default function ContactPage() {
     setTimeout(() => setSaved(false), 2500);
   };
 
-  if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (loading) return <PageSkeleton rows={4} />;
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 md:p-8 max-w-2xl">
       {error && <BlockedBanner errorType={error} onRetry={retry} />}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <h1 className="text-2xl font-semibold text-white mb-1">Contact Details</h1>

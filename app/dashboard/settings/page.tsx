@@ -6,6 +6,7 @@ import { isUsernameAvailable, updateUsername } from "@/lib/firestore";
 import { motion } from "framer-motion";
 import { ExternalLink, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
+import PageSkeleton from "@/components/ui/PageSkeleton";
 import { useState, useEffect, useRef } from "react";
 
 function validateUsername(value: string): string | null {
@@ -75,7 +76,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-white/30 text-sm">Loading…</div>;
+  if (loading) return <PageSkeleton rows={4} />;
 
   const validationError = validateUsername(username);
   const isChanged = username !== (profile?.username ?? "");
@@ -84,7 +85,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 md:p-8 max-w-2xl">
       {error && <BlockedBanner errorType={error} onRetry={retry} />}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <h1 className="text-2xl font-semibold text-white">Settings</h1>
@@ -135,7 +136,7 @@ export default function SettingsPage() {
           <div className="bg-white/3 border border-white/8 rounded-2xl p-4 flex items-center justify-between">
             <div>
               <p className="text-white/40 text-xs mb-1">Public Profile</p>
-              <p className="text-indigo-300 text-sm">tiktag.io/u/{profile.username}</p>
+              <p className="text-indigo-300 text-sm">tiktag.pages.dev/u/{profile.username}</p>
             </div>
             <a href={`/u/${profile.username}`} target="_blank" className="text-white/30 hover:text-white/60 transition-colors">
               <ExternalLink className="w-4 h-4" />

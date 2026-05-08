@@ -17,6 +17,11 @@ export interface UserProfile {
   companyName?: string;
   companyLogoUrl?: string;
   companyWebsite?: string;
+  companyIndustry?: string;
+  companyPhone?: string;
+  companyEmail?: string;
+  companyAddress?: string;
+  companyDescription?: string;
   // Social
   linkedin?: string;
   instagram?: string;

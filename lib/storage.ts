@@ -45,3 +45,7 @@ export async function uploadProfilePhoto(uid: string, file: File): Promise<strin
 export async function uploadCoverPhoto(uid: string, file: File): Promise<string> {
   return uploadToCloudinary(file, "tapid/covers", uid);
 }
+
+export async function uploadCompanyLogo(uid: string, file: File): Promise<string> {
+  return uploadToCloudinary(file, "tapid/logos", uid);
+}

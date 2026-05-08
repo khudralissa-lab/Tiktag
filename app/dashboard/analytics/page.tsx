@@ -5,6 +5,7 @@ import { getAnalyticsEvents } from "@/lib/firestore";
 import { auth } from "@/lib/firebase";
 import { isFirebaseBlocked } from "@/lib/firebaseError";
 import BlockedBanner from "@/components/ui/BlockedBanner";
+import PageSkeleton from "@/components/ui/PageSkeleton";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { motion } from "framer-motion";
 import type { AnalyticsEvent } from "@/types";
@@ -86,9 +87,9 @@ export default function AnalyticsPage() {
     return () => { clearTimeout(timeout); settled = true; };
   }, [uid, retryKey]);
 
-  if (loading) return <div className="p-8 text-white/30 text-sm">Loading analytics…</div>;
+  if (loading) return <PageSkeleton rows={5} />;
   if (error) return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <BlockedBanner errorType={error} onRetry={() => setRetryKey((k) => k + 1)} />
     </div>
   );
@@ -100,7 +101,7 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <h1 className="text-2xl font-semibold text-white">Analytics</h1>
         <p className="text-white/40 text-sm mt-1">Last 30 days</p>
