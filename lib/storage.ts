@@ -1,27 +1,47 @@
-import { auth } from "./firebase";
-import app from "./firebase";
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-// Upload directly from the browser to Firebase Storage via the official SDK.
-// This bypasses the /api/upload proxy route entirely — no Cloudflare Worker
-// involvement means no OpenNext body-handling issues and no 502 errors.
-async function uploadDirect(file: File, path: string): Promise<string> {
-  if (!auth.currentUser) throw new Error("Not authenticated");
+function buildForm(file: File, folder: string, publicId: string): FormData {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("upload_preset", UPLOAD_PRESET!);
+  form.append("folder", folder);
+  form.append("public_id", publicId);
+  return form;
+}
 
-  // Dynamic import keeps firebase/storage out of server/Worker bundles.
-  const { getStorage, ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+async function uploadToCloudinary(file: File, folder: string, publicId: string): Promise<string> {
+  if (!CLOUD_NAME || !UPLOAD_PRESET) {
+    throw new Error("Cloudinary is not configured — set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET");
+  }
 
-  const storage = getStorage(app);
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, file, { contentType: file.type || "application/octet-stream" });
-  return getDownloadURL(storageRef);
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await fetch(url, { method: "POST", body: buildForm(file, folder, publicId) });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.secure_url as string;
+    }
+
+    const err = await res.json().catch(() => ({}));
+    const message = err.error?.message ?? `Upload failed (HTTP ${res.status})`;
+
+    // Don't retry on 4xx — bad request won't recover
+    if (res.status < 500) throw new Error(message);
+
+    if (attempt === 0) await new Promise((r) => setTimeout(r, 1200));
+    else throw new Error(message);
+  }
+
+  throw new Error("Upload failed");
 }
 
 export async function uploadProfilePhoto(uid: string, file: File): Promise<string> {
-  const ext = file.name.split(".").pop() ?? "jpg";
-  return uploadDirect(file, `avatars/${uid}.${ext}`);
+  return uploadToCloudinary(file, "tapid/avatars", uid);
 }
 
 export async function uploadCoverPhoto(uid: string, file: File): Promise<string> {
-  const ext = file.name.split(".").pop() ?? "jpg";
-  return uploadDirect(file, `covers/${uid}.${ext}`);
+  return uploadToCloudinary(file, "tapid/covers", uid);
 }

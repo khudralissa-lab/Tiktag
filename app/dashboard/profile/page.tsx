@@ -5,7 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { auth } from "@/lib/firebase";
 import { uploadProfilePhoto, uploadCoverPhoto } from "@/lib/storage";
 import { motion } from "framer-motion";
-import { Save, Sparkles, ExternalLink, Camera, Loader2 } from "lucide-react";
+import { Save, Sparkles, ExternalLink, Camera, Loader2, RotateCcw } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 import Link from "next/link";
 import Image from "next/image";
@@ -27,12 +27,19 @@ function PhotoUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [failedFile, setFailedFile] = useState<File | null>(null);
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setError("Max file size is 5 MB"); return; }
+  const doUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setError("Only image files are allowed.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Max file size is 5 MB.");
+      return;
+    }
     setError("");
+    setFailedFile(null);
     setUploading(true);
     try {
       const url = type === "avatar"
@@ -40,12 +47,35 @@ function PhotoUpload({
         : await uploadCoverPhoto(uid, file);
       onChange(url);
     } catch {
-      setError("Upload failed. Try again.");
+      setError("Upload failed.");
+      setFailedFile(file);
     } finally {
       setUploading(false);
-      e.target.value = "";
     }
   };
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await doUpload(file);
+    e.target.value = "";
+  };
+
+  const ErrorLine = () =>
+    error ? (
+      <p className="text-red-400/80 text-xs mt-1.5 flex items-center gap-1.5">
+        {error}
+        {failedFile && (
+          <button
+            type="button"
+            onClick={() => doUpload(failedFile)}
+            className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors"
+          >
+            <RotateCcw className="w-3 h-3" /> Retry
+          </button>
+        )}
+      </p>
+    ) : null;
 
   if (type === "cover") {
     return (
@@ -59,7 +89,7 @@ function PhotoUpload({
         >
           {value ? (
             <>
-              <Image src={value} alt="Cover" fill className="object-cover" />
+              <Image src={value} alt="Cover" fill className="object-cover" unoptimized />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 text-white text-xs">
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
                 {uploading ? "Uploading…" : "Change Cover"}
@@ -72,7 +102,7 @@ function PhotoUpload({
             </div>
           )}
         </button>
-        {error && <p className="text-red-400/80 text-xs mt-1.5">{error}</p>}
+        <ErrorLine />
         <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
       </div>
     );
@@ -89,7 +119,7 @@ function PhotoUpload({
       >
         {value ? (
           <>
-            <Image src={value} alt="Avatar" fill className="object-cover" />
+            <Image src={value} alt="Avatar" fill className="object-cover" unoptimized />
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               {uploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Camera className="w-4 h-4 text-white" />}
             </div>
@@ -108,7 +138,7 @@ function PhotoUpload({
           {uploading ? "Uploading…" : value ? "Change photo" : "Upload photo"}
         </button>
         <p className="text-white/25 text-xs mt-0.5">JPG, PNG or WEBP · Max 5 MB</p>
-        {error && <p className="text-red-400/80 text-xs mt-0.5">{error}</p>}
+        <ErrorLine />
       </div>
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </div>
@@ -191,7 +221,10 @@ export default function ProfilePage() {
               value={form.photoURL}
               uid={user.uid}
               type="avatar"
-              onChange={(url) => setForm((f) => ({ ...f, photoURL: url }))}
+              onChange={(url) => {
+                setForm((f) => ({ ...f, photoURL: url }));
+                update({ photoURL: url });
+              }}
             />
           </div>
         )}
@@ -203,7 +236,10 @@ export default function ProfilePage() {
               value={form.coverPhotoUrl}
               uid={user.uid}
               type="cover"
-              onChange={(url) => setForm((f) => ({ ...f, coverPhotoUrl: url }))}
+              onChange={(url) => {
+                setForm((f) => ({ ...f, coverPhotoUrl: url }));
+                update({ coverPhotoUrl: url });
+              }}
             />
           </div>
         )}
