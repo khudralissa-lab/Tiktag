@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone, MessageCircle, Mail, UserPlus,
   Globe, MapPin, Building2, Share2, QrCode,
-  ChevronRight, Link2, Download, ExternalLink, ChevronDown,
+  ChevronRight, Link2, Download, ChevronDown, ArrowUpRight,
 } from "lucide-react";
 import { trackProfileView, trackButtonClick } from "@/lib/analytics";
 import { generateVCard, downloadVCard } from "@/lib/utils";
@@ -67,9 +67,84 @@ function getLinkHref(link: CustomLink): string {
   }
 }
 
-// ─── Inline QR renderer (dark on white) ─────────────────────────────────────
+// ─── Grain texture ───────────────────────────────────────────────────────────
 
-function ProfileQR({ url, username }: { url: string; username: string }) {
+function GrainOverlay({ opacity = 0.045 }: { opacity?: number }) {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ opacity }}>
+      <svg className="absolute inset-0 w-full h-full" style={{ mixBlendMode: "overlay" as const }}>
+        <filter id="grain-noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.78" numOctaves="4" stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#grain-noise)" />
+      </svg>
+    </div>
+  );
+}
+
+// ─── Ambient orb ─────────────────────────────────────────────────────────────
+
+function AmbientOrb({ color, x, y, w, h, duration, delay = 0 }: {
+  color: string; x: string; y: string; w: number; h: number; duration: number; delay?: number;
+}) {
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{
+        left: x, top: y, width: w, height: h,
+        background: `radial-gradient(ellipse, ${color} 0%, transparent 70%)`,
+        filter: "blur(55px)",
+        borderRadius: "50%",
+      }}
+      animate={{ x: [0, 22, -12, 8, 0], y: [0, -16, 10, -6, 0], scale: [1, 1.07, 0.95, 1.03, 1] }}
+      transition={{ duration, repeat: Infinity, ease: "easeInOut", delay, repeatType: "mirror" }}
+    />
+  );
+}
+
+// ─── Spring reveal ───────────────────────────────────────────────────────────
+
+function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-28px" }}
+      transition={{ type: "spring", stiffness: 260, damping: 22, delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── Section divider ─────────────────────────────────────────────────────────
+
+function Divider({ color }: { color: string }) {
+  return (
+    <div className="my-12 flex items-center">
+      <div className="flex-1 h-px" style={{
+        background: `linear-gradient(90deg, transparent 0%, ${color}70 40%, ${color}70 60%, transparent 100%)`,
+      }} />
+    </div>
+  );
+}
+
+// ─── Section label ────────────────────────────────────────────────────────────
+
+function SectionLabel({ children, color }: { children: React.ReactNode; color: string }) {
+  return (
+    <p className="mb-5 font-bold uppercase" style={{
+      fontSize: "10px", letterSpacing: "0.2em", color: `${color}50`,
+    }}>
+      {children}
+    </p>
+  );
+}
+
+// ─── ProfileQR ────────────────────────────────────────────────────────────────
+
+function ProfileQR({ url, username, displayName }: { url: string; username: string; displayName?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     if (!ref.current || !url) return;
@@ -89,16 +164,17 @@ function ProfileQR({ url, username }: { url: string; username: string }) {
     a.click();
   };
   return (
-    <div className="flex flex-col items-center gap-3">
-      <canvas ref={ref} className="rounded-xl block" />
+    <div className="flex flex-col items-center gap-4">
+      <canvas ref={ref} className="rounded-2xl block" />
       <button
         onClick={download}
         className="flex items-center gap-1.5 transition-colors"
-        style={{ fontSize: "11px", color: "rgba(0,0,0,0.35)" }}
+        style={{ fontSize: "12px", color: "rgba(0,0,0,0.35)", fontWeight: 500 }}
         onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(0,0,0,0.65)")}
         onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(0,0,0,0.35)")}
       >
-        <Download className="w-3 h-3" /> Download PNG
+        <Download className="w-3.5 h-3.5" />
+        Save QR Code
       </button>
     </div>
   );
@@ -109,23 +185,24 @@ function ProfileQR({ url, username }: { url: string; username: string }) {
 function ProfileSkeleton() {
   return (
     <div className="min-h-screen bg-black">
-      <div className="w-full h-[320px] animate-pulse" style={{ background: "rgba(255,255,255,0.04)" }} />
+      <div className="w-full h-[440px] animate-pulse" style={{ background: "rgba(255,255,255,0.04)" }} />
       <div className="max-w-[560px] mx-auto px-6 md:px-10">
-        <div className="-mt-[76px] flex justify-center mb-8 relative z-10">
-          <div className="w-[152px] h-[152px] rounded-full animate-pulse"
+        <div className="-mt-[84px] flex justify-center mb-8 relative z-10">
+          <div className="w-[168px] h-[168px] rounded-full animate-pulse"
             style={{ background: "rgba(255,255,255,0.08)", border: "4px solid #000" }} />
         </div>
-        <div className="flex flex-col items-center gap-3 mb-9">
-          <div className="h-9 w-52 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.07)" }} />
-          <div className="h-5 w-36 rounded-lg animate-pulse" style={{ background: "rgba(255,255,255,0.05)" }} />
+        <div className="flex flex-col items-center gap-3 mb-10">
+          <div className="h-11 w-56 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.07)" }} />
+          <div className="h-5 w-40 rounded-lg animate-pulse" style={{ background: "rgba(255,255,255,0.05)" }} />
           <div className="h-4 w-64 rounded-lg animate-pulse mt-2" style={{ background: "rgba(255,255,255,0.04)" }} />
           <div className="h-4 w-48 rounded-lg animate-pulse" style={{ background: "rgba(255,255,255,0.03)" }} />
         </div>
         <div className="space-y-3">
-          <div className="h-[62px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+          <div className="h-[64px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
           <div className="grid grid-cols-3 gap-3">
-            {[0,1,2].map((i) => (
-              <div key={i} className="h-[82px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.04)", opacity: 1 - i * 0.15 }} />
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-[90px] rounded-2xl animate-pulse"
+                style={{ background: "rgba(255,255,255,0.04)", opacity: 1 - i * 0.15 }} />
             ))}
           </div>
         </div>
@@ -134,36 +211,9 @@ function ProfileSkeleton() {
   );
 }
 
-// ─── Fade-in-on-scroll section wrapper ──────────────────────────────────────
-
-function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// ─── Thin rule between major sections ────────────────────────────────────────
-
-function Rule({ color }: { color: string }) {
-  return (
-    <div className="flex items-center gap-3 my-10">
-      <div className="flex-1 h-px" style={{ background: color }} />
-      <div className="w-1 h-1 rounded-full" style={{ background: color, opacity: 1.5 }} />
-      <div className="flex-1 h-px" style={{ background: color }} />
-    </div>
-  );
-}
-
 // ─── Main ────────────────────────────────────────────────────────────────────
 
-const BIO_LIMIT = 140;
+const BIO_LIMIT = 160;
 
 export default function PublicProfileClient({
   username,
@@ -195,9 +245,9 @@ export default function PublicProfileClient({
   if (notFound) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center" style={{ background: "#050505" }}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.92 }}
+        initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
+        transition={{ type: "spring", stiffness: 260, damping: 22 }}
         className="flex flex-col items-center gap-4"
       >
         <div className="w-20 h-20 rounded-[28px] flex items-center justify-center"
@@ -266,15 +316,15 @@ export default function PublicProfileClient({
   const longBio = !!profile.bio && profile.bio.length > BIO_LIMIT;
   const bioText = longBio && !bioExpanded ? profile.bio!.slice(0, BIO_LIMIT) + "…" : profile.bio;
 
-  const contactTiles: { label: string; href: string; icon: React.ReactNode }[] = [
-    ...(profile.phone    ? [{ label: "Call",      href: `tel:${profile.phone}`,                                           icon: <Phone         className="w-5 h-5" style={{ color: theme.accent }} /> }] : []),
-    ...(profile.whatsapp ? [{ label: "WhatsApp",  href: `https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`,           icon: <MessageCircle className="w-5 h-5" style={{ color: "#25d366" }} /> }] : []),
-    ...(profile.email    ? [{ label: "Email",     href: `mailto:${profile.email}`,                                        icon: <Mail          className="w-5 h-5" style={{ color: theme.accent }} /> }] : []),
+  const contactTiles: { label: string; href: string; icon: React.ReactNode; color: string }[] = [
+    ...(profile.phone    ? [{ label: "Call",     href: `tel:${profile.phone}`,                                  icon: <Phone         className="w-[22px] h-[22px]" />, color: theme.accent }] : []),
+    ...(profile.whatsapp ? [{ label: "WhatsApp", href: `https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`, icon: <MessageCircle className="w-[22px] h-[22px]" />, color: "#25d366"   }] : []),
+    ...(profile.email    ? [{ label: "Email",    href: `mailto:${profile.email}`,                               icon: <Mail          className="w-[22px] h-[22px]" />, color: theme.accent }] : []),
   ];
 
-  const secondaryTiles: { label: string; href: string; icon: React.ReactNode }[] = [
-    ...(profile.linkedin ? [{ label: "LinkedIn", href: profile.linkedin, icon: <PlatformSvg platform="linkedin" size={16} /> }] : []),
-    ...(profile.website  ? [{ label: "Website",  href: profile.website,  icon: <Globe className="w-4 h-4 shrink-0" style={{ color: theme.accent }} /> }] : []),
+  const secondaryTiles: { label: string; href: string; icon: React.ReactNode; color: string }[] = [
+    ...(profile.linkedin ? [{ label: "LinkedIn", href: profile.linkedin, icon: <PlatformSvg platform="linkedin" size={17} />, color: "#0a66c2"   }] : []),
+    ...(profile.website  ? [{ label: "Website",  href: profile.website,  icon: <Globe className="w-4 h-4 shrink-0" />,       color: theme.accent }] : []),
   ];
 
   const tilesCols = (n: number) => n === 1 ? "grid-cols-1" : n === 2 ? "grid-cols-2" : "grid-cols-3";
@@ -283,115 +333,147 @@ export default function PublicProfileClient({
     <div className="min-h-screen" style={{ background: theme.background }}>
 
       {/* ══════════════════════════════════════════════════════
-          HERO
+          CINEMATIC HERO
       ══════════════════════════════════════════════════════ */}
-      <div className="relative w-full overflow-hidden" style={{ height: "320px" }}>
+      <div className="relative w-full overflow-hidden" style={{ height: "440px" }}>
         {hasCover ? (
           <>
             <Image src={profile.coverPhotoUrl!} alt="Cover" fill className="object-cover" priority unoptimized />
-            {/* 3-layer cinematic gradient */}
+            {/* Cinematic gradient — 4 layers */}
             <div className="absolute inset-0" style={{
               background: `linear-gradient(to bottom,
-                rgba(0,0,0,0.05) 0%,
-                rgba(0,0,0,0.18) 40%,
-                rgba(0,0,0,0.55) 75%,
+                rgba(0,0,0,0) 0%,
+                rgba(0,0,0,0.08) 25%,
+                rgba(0,0,0,0.48) 65%,
                 ${theme.background} 100%)`,
             }} />
+            <GrainOverlay opacity={0.03} />
           </>
         ) : (
           <>
-            {/* Base surface */}
+            {/* Base */}
             <div className="absolute inset-0" style={{ background: theme.surface }} />
-            {/* Radial accent glow */}
+            {/* Dot grid */}
             <div className="absolute inset-0" style={{
-              background: `radial-gradient(ellipse 130% 100% at 50% -10%, ${theme.accent}30 0%, transparent 58%),
-                           radial-gradient(ellipse 70% 60% at 80% 90%, ${theme.accent}0d 0%, transparent 55%)`,
+              backgroundImage: `radial-gradient(circle, ${theme.accent}20 1px, transparent 1px)`,
+              backgroundSize: "30px 30px",
+              opacity: 0.55,
             }} />
-            {/* Animated breathing glow */}
+            {/* Ambient orbs */}
+            <AmbientOrb color={`${theme.accent}55`} x="8%"  y="5%"   w={380} h={270} duration={9}  delay={0}   />
+            <AmbientOrb color={`${theme.accent}38`} x="55%"  y="35%"  w={300} h={240} duration={11} delay={2.5} />
+            <AmbientOrb color={`${theme.accent}28`} x="35%"  y="-15%" w={220} h={180} duration={7}  delay={1}   />
+            {/* Breathing central glow */}
             <motion.div
               className="absolute inset-0"
-              animate={{ opacity: [0.25, 0.55, 0.25] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              style={{
-                background: `radial-gradient(ellipse 70% 55% at 50% 0%, ${theme.accent}22 0%, transparent 60%)`,
-              }}
+              animate={{ opacity: [0.18, 0.42, 0.18] }}
+              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+              style={{ background: `radial-gradient(ellipse 85% 70% at 50% 0%, ${theme.accent}28 0%, transparent 65%)` }}
             />
-            {/* Top accent edge line */}
-            <div className="absolute top-0 left-0 right-0 h-px" style={{
-              background: `linear-gradient(90deg, transparent 0%, ${theme.accent}55 35%, ${theme.accent}70 50%, ${theme.accent}55 65%, transparent 100%)`,
+            {/* Top accent edge */}
+            <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{
+              background: `linear-gradient(90deg, transparent 0%, ${theme.accent}55 30%, ${theme.accent}90 50%, ${theme.accent}55 70%, transparent 100%)`,
             }} />
-            {/* Large faint monogram fills the empty space */}
+            {/* Large monogram */}
             {profile.displayName && (
               <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none overflow-hidden">
                 <span className="font-black uppercase leading-none"
-                  style={{ fontSize: "clamp(160px, 50vw, 260px)", color: `${theme.accent}07`, letterSpacing: "-0.06em" }}>
+                  style={{ fontSize: "clamp(180px, 55vw, 310px)", color: `${theme.accent}06`, letterSpacing: "-0.06em" }}>
                   {profile.displayName[0]}
                 </span>
               </div>
             )}
+            {/* Bottom fade to background */}
+            <div className="absolute inset-x-0 bottom-0 h-36" style={{
+              background: `linear-gradient(to bottom, transparent, ${theme.background})`,
+            }} />
+            <GrainOverlay opacity={0.042} />
           </>
         )}
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          CONTENT CONTAINER
+          CONTENT
       ══════════════════════════════════════════════════════ */}
       <div className="max-w-[560px] mx-auto px-6 md:px-10 pb-32">
 
-        {/* ── Avatar ────────────────────────────────────── */}
-        <motion.div
-          className="flex justify-center -mt-[76px] mb-8 relative z-10"
-          initial={{ opacity: 0, scale: 0.88 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.55, ease: [0.34, 1.56, 0.64, 1] }}
-        >
-          <div
-            className="relative overflow-hidden flex items-center justify-center"
-            style={{
-              width: 152, height: 152, borderRadius: "50%",
-              border: `4px solid ${theme.background}`,
-              boxShadow: `0 0 0 1.5px ${theme.accent}55,
-                          0 16px 56px rgba(0,0,0,0.65),
-                          0 0 100px ${theme.accent}16`,
-              background: `${theme.accent}18`,
-            }}
+        {/* ── Floating Avatar ──────────────────────────── */}
+        <div className="flex justify-center relative z-10" style={{ marginTop: "-84px", marginBottom: "36px" }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.78, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.08 }}
           >
-            {profile.photoURL ? (
-              <Image src={profile.photoURL} alt={profile.displayName || "Profile"} fill className="object-cover" unoptimized />
-            ) : (
-              <span className="font-bold select-none" style={{ fontSize: 54, color: theme.accent }}>
-                {profile.displayName?.[0]?.toUpperCase() || "?"}
-              </span>
-            )}
-          </div>
-        </motion.div>
+            <motion.div
+              animate={{ y: [0, -7, 0] }}
+              transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <div
+                className="relative flex items-center justify-center overflow-hidden"
+                style={{
+                  width: 168, height: 168, borderRadius: "50%",
+                  border: `4px solid ${theme.background}`,
+                  background: `${theme.accent}18`,
+                  boxShadow: [
+                    `0 0 0 1.5px ${theme.accent}55`,
+                    `0 0 0 7px ${theme.accent}14`,
+                    `0 0 0 14px ${theme.accent}07`,
+                    `0 28px 80px rgba(0,0,0,0.75)`,
+                    `0 0 130px ${theme.accent}22`,
+                  ].join(", "),
+                }}
+              >
+                {profile.photoURL ? (
+                  <Image src={profile.photoURL} alt={profile.displayName || "Profile"} fill className="object-cover" unoptimized />
+                ) : (
+                  <span className="font-bold select-none" style={{ fontSize: 62, color: theme.accent }}>
+                    {profile.displayName?.[0]?.toUpperCase() || "?"}
+                  </span>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
 
-        {/* ── Identity ──────────────────────────────────── */}
+        {/* ── Identity ─────────────────────────────────── */}
         <motion.div
           className="text-center"
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.07, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.14 }}
         >
           <h1
-            className="font-bold tracking-tight leading-[1.1]"
-            style={{ fontSize: "clamp(30px, 7.5vw, 38px)", color: theme.text, letterSpacing: "-0.025em" }}
+            className="font-extrabold leading-[1.05]"
+            style={{
+              fontSize: "clamp(32px, 8vw, 46px)",
+              color: theme.text,
+              letterSpacing: "-0.03em",
+              textShadow: `0 2px 32px rgba(0,0,0,0.22)`,
+            }}
           >
             {profile.displayName || "—"}
           </h1>
 
           {profile.title && (
-            <p className="mt-3 font-medium" style={{ fontSize: "16px", color: theme.subtext }}>
+            <p className="mt-3 font-semibold" style={{
+              fontSize: "17px",
+              color: theme.accent,
+              opacity: 0.88,
+              letterSpacing: "-0.01em",
+            }}>
               {profile.title}
             </p>
           )}
 
           {profile.location && (
             <div className="flex justify-center mt-4">
-              <span
+              <motion.span
+                initial={{ opacity: 0, scale: 0.88 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.22 }}
                 className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5"
                 style={{
-                  fontSize: "11.5px",
+                  fontSize: "12px", fontWeight: 500,
                   background: `${theme.accent}12`,
                   border: `1px solid ${theme.accent}28`,
                   color: theme.subtext,
@@ -399,25 +481,25 @@ export default function PublicProfileClient({
               >
                 <MapPin className="w-3 h-3 shrink-0" style={{ color: theme.accent }} />
                 {profile.location}
-              </span>
+              </motion.span>
             </div>
           )}
 
           {profile.bio && (
-            <div className="mt-6 mb-1">
+            <div className="mt-7 mb-1">
               <p
-                className="max-w-sm mx-auto"
-                style={{ fontSize: "15px", lineHeight: "1.85", color: theme.subtext }}
+                className="max-w-[440px] mx-auto"
+                style={{ fontSize: "15.5px", lineHeight: "1.88", color: theme.subtext, letterSpacing: "0.006em" }}
               >
                 {bioText}
               </p>
               {longBio && (
                 <button
                   onClick={() => setBioExpanded((v) => !v)}
-                  className="inline-flex items-center gap-1 mt-2 transition-opacity hover:opacity-70"
-                  style={{ fontSize: "12px", color: theme.accent }}
+                  className="inline-flex items-center gap-1 mt-3 transition-opacity hover:opacity-70"
+                  style={{ fontSize: "12.5px", color: theme.accent, fontWeight: 500 }}
                 >
-                  {bioExpanded ? "Show less" : "Show more"}
+                  {bioExpanded ? "Show less" : "Read more"}
                   <motion.span animate={{ rotate: bioExpanded ? 180 : 0 }} transition={{ duration: 0.25 }}>
                     <ChevronDown className="w-3.5 h-3.5" />
                   </motion.span>
@@ -427,49 +509,62 @@ export default function PublicProfileClient({
           )}
         </motion.div>
 
-        {/* ── Action Zone ───────────────────────────────── */}
+        {/* ── CTA Zone ─────────────────────────────────── */}
         <motion.div
-          className="mt-10 space-y-3"
-          initial={{ opacity: 0, y: 18 }}
+          className="mt-11 space-y-3"
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.2 }}
         >
           {/* Primary CTA */}
           <motion.button
-            whileTap={{ scale: 0.982 }}
+            whileTap={{ scale: 0.974 }}
+            whileHover={{ scale: 1.009 }}
             onClick={handleSaveContact}
-            className="w-full flex items-center justify-center gap-3 rounded-[18px] font-semibold text-white"
+            className="relative w-full flex items-center justify-center gap-3 rounded-[20px] font-semibold text-white overflow-hidden"
             style={{
-              padding: "20px 28px",
+              padding: "21px 28px",
               fontSize: "17px",
-              letterSpacing: "-0.015em",
+              letterSpacing: "-0.02em",
               background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accent}cc 100%)`,
-              boxShadow: `0 8px 32px ${theme.accent}40, 0 1px 0 rgba(255,255,255,0.14) inset, 0 -1px 0 rgba(0,0,0,0.1) inset`,
+              boxShadow: `0 14px 48px ${theme.accent}48, 0 1px 0 rgba(255,255,255,0.18) inset`,
             }}
           >
-            <UserPlus className="w-[18px] h-[18px] shrink-0" />
-            Save Contact
+            {/* Shimmer */}
+            <motion.div
+              className="absolute inset-0"
+              style={{ background: "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.16) 50%, transparent 80%)" }}
+              animate={{ x: ["-100%", "120%"] }}
+              transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
+            />
+            <UserPlus className="w-[19px] h-[19px] shrink-0 relative z-10" />
+            <span className="relative z-10">Save Contact</span>
           </motion.button>
 
           {/* Contact tiles */}
           {contactTiles.length > 0 && (
             <div className={`grid gap-3 ${tilesCols(contactTiles.length)}`}>
-              {contactTiles.map(({ label, href, icon }) => (
+              {contactTiles.map(({ label, href, icon, color }, i) => (
                 <motion.button
                   key={label}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.93 }}
+                  whileHover={{ y: -4, scale: 1.015 }}
                   onClick={() => handleAction(label, href)}
-                  className="flex flex-col items-center gap-[9px] rounded-[16px] font-medium transition-opacity hover:opacity-80"
+                  className="flex flex-col items-center gap-3 rounded-[18px] font-medium"
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.26 + i * 0.06 }}
                   style={{
-                    padding: "18px 14px",
+                    padding: "20px 14px",
                     background: theme.buttonBg,
                     border: `1px solid ${theme.border}`,
                     color: theme.text,
                     fontSize: "13px",
                     letterSpacing: "0.01em",
+                    boxShadow: "0 2px 18px rgba(0,0,0,0.14)",
                   }}
                 >
-                  {icon}
+                  <span style={{ color }}>{icon}</span>
                   {label}
                 </motion.button>
               ))}
@@ -479,23 +574,26 @@ export default function PublicProfileClient({
           {/* Secondary tiles */}
           {secondaryTiles.length > 0 && (
             <div className={`grid gap-3 ${tilesCols(secondaryTiles.length)}`}>
-              {secondaryTiles.map(({ label, href, icon }) => (
+              {secondaryTiles.map(({ label, href, icon, color }, i) => (
                 <motion.button
                   key={label}
                   whileTap={{ scale: 0.97 }}
+                  whileHover={{ y: -3 }}
                   onClick={() => handleAction(label, href)}
-                  className="flex items-center justify-center gap-2.5 rounded-[16px] font-medium transition-opacity hover:opacity-80"
+                  className="flex items-center justify-center gap-2.5 rounded-[18px] font-medium"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.32 + i * 0.06 }}
                   style={{
-                    padding: "16px 24px",
+                    padding: "17px 24px",
                     background: theme.buttonBg,
                     border: `1px solid ${theme.border}`,
                     color: theme.text,
                     fontSize: "14px",
+                    boxShadow: "0 2px 18px rgba(0,0,0,0.14)",
                   }}
                 >
-                  <span style={{ color: label === "LinkedIn" ? "#0a66c2" : theme.accent }}>
-                    {icon}
-                  </span>
+                  <span style={{ color }}>{icon}</span>
                   {label}
                 </motion.button>
               ))}
@@ -504,62 +602,64 @@ export default function PublicProfileClient({
         </motion.div>
 
         {/* ══════════════════════════════════════════════
-            COMPANY SECTION
+            COMPANY
         ══════════════════════════════════════════════ */}
         {profile.companyName && (
           <>
-            <Rule color={theme.border} />
+            <Divider color={theme.border} />
             <Reveal>
+              <SectionLabel color={theme.subtext}>Company</SectionLabel>
               <motion.div
-                whileHover={{ scale: 1.005 }}
-                transition={{ duration: 0.2 }}
-                className="rounded-[22px] overflow-hidden"
+                whileHover={{ scale: 1.004, y: -3 }}
+                transition={{ type: "spring", stiffness: 380, damping: 22 }}
+                className="rounded-[26px] overflow-hidden"
                 style={{
-                  background: `linear-gradient(145deg, ${theme.accent}09 0%, transparent 55%), ${theme.surface}`,
+                  background: `linear-gradient(150deg, ${theme.accent}0b 0%, transparent 50%), ${theme.surface}`,
                   border: `1px solid ${theme.border}`,
-                  boxShadow: `0 4px 28px rgba(0,0,0,0.18), 0 1px 0 rgba(255,255,255,0.03) inset`,
+                  boxShadow: `0 10px 48px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.03) inset`,
                 }}
               >
                 {/* Accent top edge */}
-                <div className="h-[2px]" style={{
-                  background: `linear-gradient(90deg, transparent, ${theme.accent}50, transparent)`,
+                <div style={{
+                  height: "2px",
+                  background: `linear-gradient(90deg, transparent 5%, ${theme.accent}50 40%, ${theme.accent}75 50%, ${theme.accent}50 60%, transparent 95%)`,
                 }} />
 
                 <div className="p-7">
-                  <div className="flex items-start gap-4">
-                    {/* Logo */}
-                    <div
-                      className="flex-shrink-0 rounded-[16px] overflow-hidden flex items-center justify-center"
+                  <div className="flex items-start gap-5">
+                    <motion.div
+                      whileHover={{ scale: 1.06 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                      className="flex-shrink-0 rounded-[18px] overflow-hidden flex items-center justify-center"
                       style={{
-                        width: 68, height: 68,
+                        width: 72, height: 72,
                         background: theme.buttonBg,
                         border: `1px solid ${theme.border}`,
-                        boxShadow: `0 2px 12px rgba(0,0,0,0.2)`,
+                        boxShadow: `0 4px 20px rgba(0,0,0,0.28), 0 0 0 1px ${theme.accent}14`,
                       }}
                     >
                       {profile.companyLogoUrl ? (
-                        <Image src={profile.companyLogoUrl} alt={profile.companyName} width={68} height={68}
-                          className="w-full h-full object-contain p-2" unoptimized />
+                        <Image src={profile.companyLogoUrl} alt={profile.companyName} width={72} height={72}
+                          className="w-full h-full object-contain p-2.5" unoptimized />
                       ) : (
-                        <Building2 className="w-6 h-6" style={{ color: theme.subtext }} />
+                        <Building2 className="w-7 h-7" style={{ color: `${theme.subtext}65` }} />
                       )}
-                    </div>
+                    </motion.div>
 
-                    {/* Company info */}
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <p className="font-bold leading-tight" style={{ fontSize: "17px", color: theme.text, letterSpacing: "-0.02em" }}>
+                    <div className="flex-1 min-w-0 pt-1">
+                      <p className="font-bold leading-tight"
+                        style={{ fontSize: "19px", color: theme.text, letterSpacing: "-0.025em" }}>
                         {profile.companyName}
                       </p>
                       {profile.companyIndustry && (
                         <span
-                          className="inline-flex items-center mt-1.5 rounded-full px-2.5 py-0.5"
+                          className="inline-flex items-center mt-2 rounded-full px-2.5 py-0.5"
                           style={{
-                            fontSize: "10.5px",
-                            fontWeight: 600,
+                            fontSize: "11px", fontWeight: 600,
                             background: `${theme.accent}16`,
                             border: `1px solid ${theme.accent}30`,
                             color: theme.accent,
-                            letterSpacing: "0.02em",
+                            letterSpacing: "0.03em",
                           }}
                         >
                           {profile.companyIndustry}
@@ -569,32 +669,40 @@ export default function PublicProfileClient({
                   </div>
 
                   {profile.companyDescription && (
-                    <p className="mt-4 leading-relaxed" style={{ fontSize: "13.5px", color: theme.subtext, lineHeight: 1.75 }}>
+                    <p className="mt-5 leading-relaxed"
+                      style={{ fontSize: "14px", color: theme.subtext, lineHeight: 1.82 }}>
                       {profile.companyDescription}
                     </p>
                   )}
 
                   {profile.companyWebsite && !profile.companyDescription && (
-                    <div className="mt-3 flex items-center gap-1.5" style={{ color: theme.subtext, fontSize: "12px" }}>
-                      <Globe className="w-3 h-3 shrink-0" />
+                    <div className="mt-4 flex items-center gap-1.5"
+                      style={{ color: `${theme.subtext}65`, fontSize: "12.5px" }}>
+                      <Globe className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{profile.companyWebsite.replace(/^https?:\/\//, "")}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Visit website CTA */}
                 {profile.companyWebsite && (
-                  <a
+                  <motion.a
+                    whileHover={{ x: 4 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
                     href={profile.companyWebsite}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => trackButtonClick(profile.uid, "Company Website")}
-                    className="flex items-center justify-between px-5 py-3.5 transition-opacity hover:opacity-70"
-                    style={{ borderTop: `1px solid ${theme.border}`, color: theme.accent, fontSize: "13px", fontWeight: 500 }}
+                    className="flex items-center justify-between px-7 py-4 transition-opacity hover:opacity-70"
+                    style={{
+                      borderTop: `1px solid ${theme.border}`,
+                      color: theme.accent,
+                      fontSize: "13.5px",
+                      fontWeight: 500,
+                    }}
                   >
                     <span>Visit Website</span>
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  </a>
+                    <ArrowUpRight className="w-4 h-4 shrink-0" />
+                  </motion.a>
                 )}
               </motion.div>
             </Reveal>
@@ -606,60 +714,61 @@ export default function PublicProfileClient({
         ══════════════════════════════════════════════ */}
         {allSocials.length > 0 && (
           <>
-            <Rule color={theme.border} />
+            <Divider color={theme.border} />
             <Reveal>
-              <div className="flex flex-col items-center gap-6">
-                <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: `${theme.subtext}60` }}>
-                  Find me online
-                </p>
-                {/* Social pods grid — max 3 per row */}
-                <div
-                  className="grid gap-x-8 gap-y-7 w-full"
-                  style={{
-                    gridTemplateColumns: allSocials.length <= 2
-                      ? `repeat(${allSocials.length}, auto)`
-                      : "repeat(3, auto)",
-                    justifyContent: "center",
-                  }}
-                >
-                  {allSocials.map(({ platform, url }, i) => {
-                    const brandColor = PLATFORM_COLORS[platform] || theme.accent;
-                    const label = PLATFORM_LABELS[platform] || platform;
-                    return (
-                      <motion.div
-                        key={platform}
-                        className="flex flex-col items-center gap-2"
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.04 + i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              <SectionLabel color={theme.subtext}>Social Presence</SectionLabel>
+              <div
+                className="grid w-full"
+                style={{
+                  gridTemplateColumns: allSocials.length <= 2
+                    ? `repeat(${allSocials.length}, auto)`
+                    : "repeat(3, auto)",
+                  justifyContent: "center",
+                  gap: "24px 48px",
+                }}
+              >
+                {allSocials.map(({ platform, url }, i) => {
+                  const brandColor = PLATFORM_COLORS[platform] || theme.accent;
+                  const label = PLATFORM_LABELS[platform] || platform;
+                  return (
+                    <motion.div
+                      key={platform}
+                      className="flex flex-col items-center gap-3"
+                      initial={{ opacity: 0, y: 16, scale: 0.88 }}
+                      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ type: "spring", stiffness: 300, damping: 22, delay: 0.04 + i * 0.07 }}
+                    >
+                      <motion.a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackButtonClick(profile.uid, platform)}
+                        whileHover={{ scale: 1.16, y: -5 }}
+                        whileTap={{ scale: 0.86 }}
+                        className="flex items-center justify-center rounded-full"
+                        style={{
+                          width: 64, height: 64,
+                          background: `${brandColor}18`,
+                          border: `1.5px solid ${brandColor}38`,
+                          color: brandColor,
+                          boxShadow: `0 4px 22px ${brandColor}25`,
+                          transition: "box-shadow 0.2s ease",
+                        }}
+                        aria-label={label}
                       >
-                        <motion.a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => trackButtonClick(profile.uid, platform)}
-                          whileHover={{ scale: 1.12, y: -3 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="flex items-center justify-center rounded-full"
-                          style={{
-                            width: 60, height: 60,
-                            background: `${brandColor}1c`,
-                            border: `1.5px solid ${brandColor}35`,
-                            color: brandColor,
-                            boxShadow: `0 3px 16px ${brandColor}25`,
-                          }}
-                          aria-label={label}
-                        >
-                          <PlatformSvg platform={platform} size={22} />
-                        </motion.a>
-                        <span className="font-medium" style={{ fontSize: "10.5px", color: `${theme.subtext}80`, letterSpacing: "0.01em" }}>
-                          {label}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                        <PlatformSvg platform={platform} size={24} />
+                      </motion.a>
+                      <span className="font-semibold" style={{
+                        fontSize: "11px",
+                        color: `${theme.subtext}75`,
+                        letterSpacing: "0.025em",
+                      }}>
+                        {label}
+                      </span>
+                    </motion.div>
+                  );
+                })}
               </div>
             </Reveal>
           </>
@@ -670,33 +779,47 @@ export default function PublicProfileClient({
         ══════════════════════════════════════════════ */}
         {enabledLinks.length > 0 && (
           <>
-            <Rule color={theme.border} />
-            <div className="space-y-2.5">
+            <Divider color={theme.border} />
+            <Reveal>
+              <SectionLabel color={theme.subtext}>Links</SectionLabel>
+            </Reveal>
+            <div className="space-y-3">
               {enabledLinks.map((link, i) => (
                 <Reveal key={link.id} delay={i * 0.05}>
                   <motion.button
-                    whileTap={{ scale: 0.985 }}
+                    whileTap={{ scale: 0.983 }}
+                    whileHover={{ x: 4, scale: 1.003 }}
                     onClick={() => handleAction(link.label, getLinkHref(link))}
-                    className="w-full flex items-center gap-4 rounded-[16px] text-left group transition-all hover:opacity-85"
+                    className="w-full flex items-center gap-4 rounded-[20px] text-left group"
                     style={{
-                      padding: "18px 24px",
+                      padding: "18px 22px",
                       background: theme.buttonBg,
                       border: `1px solid ${theme.border}`,
+                      boxShadow: "0 2px 18px rgba(0,0,0,0.12)",
                     }}
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: `${theme.accent}14`, border: `1px solid ${theme.accent}22` }}
+                      className="w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0"
+                      style={{
+                        background: `${theme.accent}14`,
+                        border: `1px solid ${theme.accent}22`,
+                        boxShadow: `0 2px 12px ${theme.accent}18`,
+                      }}
                     >
-                      {link.type === "call"     ? <Phone className="w-4 h-4" style={{ color: theme.accent }} />
-                      : link.type === "whatsapp" ? <MessageCircle className="w-4 h-4" style={{ color: "#25d366" }} />
-                      : link.type === "email"    ? <Mail className="w-4 h-4" style={{ color: theme.accent }} />
-                      :                            <Link2 className="w-4 h-4" style={{ color: theme.accent }} />}
+                      {link.type === "call"
+                        ? <Phone         className="w-[18px] h-[18px]" style={{ color: theme.accent }}  />
+                        : link.type === "whatsapp"
+                        ? <MessageCircle className="w-[18px] h-[18px]" style={{ color: "#25d366"    }}  />
+                        : link.type === "email"
+                        ? <Mail          className="w-[18px] h-[18px]" style={{ color: theme.accent }}  />
+                        : <Link2         className="w-[18px] h-[18px]" style={{ color: theme.accent }}  />}
                     </div>
-                    <span className="flex-1 font-medium" style={{ fontSize: "15px", color: theme.text }}>
+                    <span className="flex-1 font-semibold"
+                      style={{ fontSize: "15.5px", color: theme.text, letterSpacing: "-0.012em" }}>
                       {link.label}
                     </span>
-                    <ChevronRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5" style={{ color: theme.subtext, opacity: 0.4 }} />
+                    <ChevronRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1"
+                      style={{ color: `${theme.subtext}38` }} />
                   </motion.button>
                 </Reveal>
               ))}
@@ -705,46 +828,51 @@ export default function PublicProfileClient({
         )}
 
         {/* ══════════════════════════════════════════════
-            CONNECT / QR SECTION
+            CONNECT / QR
         ══════════════════════════════════════════════ */}
-        <Rule color={theme.border} />
+        <Divider color={theme.border} />
         <Reveal>
-          <div className="rounded-[22px] overflow-hidden" style={{
-            background: theme.surface,
-            border: `1px solid ${theme.border}`,
-          }}>
-            {/* Share + QR toggle row */}
+          <SectionLabel color={theme.subtext}>Connect</SectionLabel>
+          <div
+            className="rounded-[26px] overflow-hidden"
+            style={{
+              background: theme.surface,
+              border: `1px solid ${theme.border}`,
+              boxShadow: "0 8px 40px rgba(0,0,0,0.18)",
+            }}
+          >
+            {/* Action row */}
             <div className="grid grid-cols-2" style={{ borderBottom: `1px solid ${theme.border}` }}>
               <motion.button
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={handleShare}
-                className="flex items-center justify-center gap-2.5 transition-opacity hover:opacity-75"
+                className="flex items-center justify-center gap-2.5 transition-colors hover:opacity-75"
                 style={{
-                  padding: "19px",
+                  padding: "20px",
                   color: theme.subtext,
-                  fontSize: "13.5px",
+                  fontSize: "14px",
                   fontWeight: 500,
                   borderRight: `1px solid ${theme.border}`,
                 }}
               >
                 <Share2 className="w-[15px] h-[15px]" />
-                Share Profile
+                Share
               </motion.button>
 
               <motion.button
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setShowQR((v) => !v)}
-                className="flex items-center justify-center gap-2.5 transition-all hover:opacity-80"
+                className="flex items-center justify-center gap-2.5 transition-all"
                 style={{
-                  padding: "19px",
-                  background: showQR ? `${theme.accent}14` : "transparent",
+                  padding: "20px",
+                  background: showQR ? `${theme.accent}15` : "transparent",
                   color: showQR ? theme.accent : theme.subtext,
-                  fontSize: "13.5px",
+                  fontSize: "14px",
                   fontWeight: 500,
                 }}
               >
                 <QrCode className="w-[15px] h-[15px]" />
-                Scan QR Code
+                QR Code
               </motion.button>
             </div>
 
@@ -755,30 +883,44 @@ export default function PublicProfileClient({
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ type: "spring", stiffness: 240, damping: 26 }}
                   className="overflow-hidden"
                 >
-                  <div className="flex flex-col items-center px-6 py-8 gap-5">
-                    {/* White QR card */}
-                    <div
-                      className="rounded-[22px] overflow-hidden bg-white"
-                      style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3), 0 4px 20px rgba(0,0,0,0.15)" }}
+                  <div className="flex flex-col items-center px-8 py-10 gap-5">
+                    {/* Premium QR card */}
+                    <motion.div
+                      initial={{ scale: 0.88, opacity: 0, y: 20 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      transition={{ type: "spring", stiffness: 280, damping: 22, delay: 0.1 }}
+                      className="rounded-[28px] overflow-hidden bg-white"
+                      style={{
+                        boxShadow: `0 40px 90px rgba(0,0,0,0.45), 0 10px 28px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.05)`,
+                      }}
                     >
-                      <div className="px-6 pt-5 pb-1">
-                        <p className="text-center font-bold text-gray-400 uppercase"
-                          style={{ fontSize: "10px", letterSpacing: "0.15em" }}>
+                      <div className="px-8 pt-7 pb-2 text-center">
+                        <p className="font-black uppercase" style={{ fontSize: "9px", letterSpacing: "0.22em", color: "#c8c8d0" }}>
                           Scan to Connect
                         </p>
+                        {profile.displayName && (
+                          <p className="font-bold mt-1.5" style={{ fontSize: "15px", letterSpacing: "-0.015em", color: "#1a1a2e" }}>
+                            {profile.displayName}
+                          </p>
+                        )}
+                        {profile.title && (
+                          <p className="mt-0.5" style={{ fontSize: "11.5px", color: "#888", fontWeight: 500 }}>
+                            {profile.title}
+                          </p>
+                        )}
                       </div>
-                      <div className="flex justify-center px-6 py-3">
-                        <ProfileQR url={profileUrl} username={profile.username || "profile"} />
+                      <div className="flex justify-center px-8 py-4">
+                        <ProfileQR url={profileUrl} username={profile.username || "profile"} displayName={profile.displayName} />
                       </div>
-                      <div className="px-6 pb-5">
-                        <p className="text-center truncate" style={{ fontSize: "10.5px", color: "rgba(0,0,0,0.3)" }}>
+                      <div className="px-8 pb-7 text-center">
+                        <p className="truncate" style={{ fontSize: "9.5px", color: "rgba(0,0,0,0.22)", letterSpacing: "0.01em" }}>
                           {profileUrl}
                         </p>
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
                 </motion.div>
               )}
@@ -787,8 +929,8 @@ export default function PublicProfileClient({
         </Reveal>
 
         {/* Watermark */}
-        <p className="text-center mt-8 pb-2" style={{ fontSize: "11px", color: `${theme.subtext}35` }}>
-          Powered by <span style={{ color: theme.accent, opacity: 0.5 }}>TikTag</span>
+        <p className="text-center mt-12 pb-2" style={{ fontSize: "11px", color: `${theme.subtext}28` }}>
+          Powered by <span style={{ color: theme.accent, opacity: 0.4 }}>TikTag</span>
         </p>
 
       </div>
