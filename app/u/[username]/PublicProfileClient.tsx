@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone, MessageCircle, Mail, UserPlus,
-  Globe, MapPin, Building2, Share2, QrCode, Link2,
-  ExternalLink, ChevronRight,
+  Globe, MapPin, Building2, Share2, QrCode,
+  ChevronRight, Link2, Download, ExternalLink,
 } from "lucide-react";
 import { trackProfileView, trackButtonClick } from "@/lib/analytics";
 import { generateVCard, downloadVCard } from "@/lib/utils";
 import { getTheme } from "@/lib/themes";
-import QRCodeDisplay from "@/components/profile/QRCodeDisplay";
 import type { UserProfile, CustomLink } from "@/types";
 
-// ─── Brand SVG icons (24×24, fill="currentColor") ───────────────────────────
+// ─── Platform brand icons ────────────────────────────────────────────────────
 
 const PLATFORM_PATHS: Record<string, string> = {
   linkedin:
@@ -40,7 +39,7 @@ const PLATFORM_COLORS: Record<string, string> = {
   tiktok: "#fe2c55",
 };
 
-function PlatformSvg({ platform, size = 16 }: { platform: string; size?: number }) {
+function PlatformSvg({ platform, size = 18 }: { platform: string; size?: number }) {
   const d = PLATFORM_PATHS[platform];
   if (!d) return <Globe width={size} height={size} />;
   return (
@@ -52,42 +51,73 @@ function PlatformSvg({ platform, size = 16 }: { platform: string; size?: number 
 
 function getLinkHref(link: CustomLink): string {
   switch (link.type) {
-    case "call": return `tel:${link.url}`;
-    case "whatsapp": return `https://wa.me/${link.url.replace(/\D/g, "")}`;
-    case "email": return `mailto:${link.url}`;
-    default: return link.url;
+    case "call":      return `tel:${link.url}`;
+    case "whatsapp":  return `https://wa.me/${link.url.replace(/\D/g, "")}`;
+    case "email":     return `mailto:${link.url}`;
+    default:          return link.url;
   }
 }
 
-function getLinkIcon(type: CustomLink["type"], accent: string) {
-  const cls = "w-4 h-4 shrink-0";
-  const style = { color: accent };
-  switch (type) {
-    case "call": return <Phone className={cls} style={style} />;
-    case "whatsapp": return <MessageCircle className={cls} style={{ color: "#25d366" }} />;
-    case "email": return <Mail className={cls} style={style} />;
-    default: return <Link2 className={cls} style={style} />;
-  }
+// ─── Inline QR (dark on white for the profile card) ─────────────────────────
+
+function ProfileQR({ url, username }: { url: string; username: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!ref.current || !url) return;
+    import("qrcode").then((mod) => {
+      (mod.default as typeof import("qrcode")).toCanvas(ref.current!, url, {
+        width: 200,
+        margin: 2,
+        color: { dark: "#111111", light: "#ffffff" },
+      });
+    });
+  }, [url]);
+
+  const download = () => {
+    if (!ref.current) return;
+    const a = document.createElement("a");
+    a.download = `tiktag-${username}.png`;
+    a.href = ref.current.toDataURL();
+    a.click();
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <canvas ref={ref} className="rounded-xl block" />
+      <button
+        onClick={download}
+        className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <Download className="w-3 h-3" /> Download
+      </button>
+    </div>
+  );
 }
 
 // ─── Loading skeleton ────────────────────────────────────────────────────────
 
 function ProfileSkeleton() {
-  const pulse = "animate-pulse rounded-xl";
   return (
     <div className="min-h-screen bg-black">
-      <div className="w-full h-52 bg-white/[0.05] animate-pulse" />
-      <div className="max-w-[390px] mx-auto px-5 -mt-14">
-        <div className="w-28 h-28 rounded-full bg-white/[0.08] animate-pulse mb-4 border-2 border-white/10" />
-        <div className="flex flex-col items-center gap-2 mb-8">
-          <div className={`h-6 w-44 bg-white/[0.07] ${pulse}`} />
-          <div className={`h-4 w-32 bg-white/[0.05] ${pulse}`} />
-          <div className={`h-3 w-24 bg-white/[0.04] ${pulse} mt-1`} />
+      <div className="w-full h-72 animate-pulse" style={{ background: "rgba(255,255,255,0.04)" }} />
+      <div className="max-w-[480px] mx-auto px-5">
+        <div className="-mt-16 flex justify-center mb-6 relative z-10">
+          <div
+            className="w-32 h-32 rounded-full animate-pulse"
+            style={{ background: "rgba(255,255,255,0.08)", border: "4px solid #000" }}
+          />
         </div>
-        <div className="space-y-2">
-          <div className={`h-12 w-full bg-white/[0.05] ${pulse}`} />
-          <div className="grid grid-cols-3 gap-2">
-            {[0, 1, 2].map((i) => <div key={i} className={`h-16 bg-white/[0.04] ${pulse}`} />)}
+        <div className="flex flex-col items-center gap-3 mb-10">
+          <div className="h-9 w-52 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.07)" }} />
+          <div className="h-5 w-40 rounded-lg animate-pulse" style={{ background: "rgba(255,255,255,0.05)" }} />
+        </div>
+        <div className="space-y-3">
+          <div className="h-[58px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.05)" }} />
+          <div className="grid grid-cols-3 gap-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-[76px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.04)" }} />
+            ))}
           </div>
         </div>
       </div>
@@ -124,12 +154,17 @@ export default function PublicProfileClient({
   }, [profileUid]);
 
   if (notFound) return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-3 px-6 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-2">
-        <QrCode className="w-7 h-7 text-white/20" />
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4 px-6 text-center">
+      <div
+        className="w-20 h-20 rounded-3xl flex items-center justify-center mb-2"
+        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+      >
+        <QrCode className="w-8 h-8 text-white/20" />
       </div>
-      <p className="text-white font-medium">Profile not found</p>
-      <p className="text-white/35 text-sm">This link may be inactive or the username has changed.</p>
+      <p className="text-white text-xl font-semibold">Profile not found</p>
+      <p className="text-white/35 text-sm max-w-xs leading-relaxed">
+        This link may be inactive or the username has changed.
+      </p>
     </div>
   );
 
@@ -171,340 +206,477 @@ export default function PublicProfileClient({
     }
   };
 
-  const socialEntries = (
-    ["linkedin", "instagram", "facebook", "xTwitter", "tiktok", "youtube"] as const
-  )
+  // Build social list
+  const socialEntries = (["linkedin", "instagram", "facebook", "xTwitter", "tiktok", "youtube"] as const)
     .map((key) => ({ platform: key as string, url: profile[key] ?? "" }))
     .filter((s) => !!s.url);
-
   const legacySocials = (profile.socials || []).filter(
     (s) => !socialEntries.find((e) => e.platform === s.platform.toLowerCase())
   );
+  const allSocials = [
+    ...socialEntries,
+    ...legacySocials.map((s) => ({ platform: s.platform.toLowerCase(), url: s.url })),
+  ];
 
   const enabledLinks = (profile.links || []).filter((l) => l.enabled !== false);
   const hasCover = !!profile.coverPhotoUrl;
 
-  const btnBase: React.CSSProperties = {
-    background: theme.buttonBg,
-    border: `1px solid ${theme.border}`,
-    color: theme.text,
-  };
+  // Contact action tiles
+  const contactTiles: { label: string; href: string; icon: React.ReactNode }[] = [
+    ...(profile.phone
+      ? [{ label: "Call", href: `tel:${profile.phone}`, icon: <Phone className="w-[22px] h-[22px]" style={{ color: theme.accent }} /> }]
+      : []),
+    ...(profile.whatsapp
+      ? [{ label: "WhatsApp", href: `https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`, icon: <MessageCircle className="w-[22px] h-[22px]" style={{ color: "#25d366" }} /> }]
+      : []),
+    ...(profile.email
+      ? [{ label: "Email", href: `mailto:${profile.email}`, icon: <Mail className="w-[22px] h-[22px]" style={{ color: theme.accent }} /> }]
+      : []),
+  ];
+
+  // Secondary action row (LinkedIn / Website)
+  const secondaryTiles: { label: string; href: string; icon: React.ReactNode }[] = [
+    ...(profile.linkedin
+      ? [{ label: "LinkedIn", href: profile.linkedin, icon: <PlatformSvg platform="linkedin" size={16} /> }]
+      : []),
+    ...(profile.website
+      ? [{ label: "Website", href: profile.website, icon: <Globe className="w-4 h-4 shrink-0" style={{ color: theme.accent }} /> }]
+      : []),
+  ];
+
+  const tilesGrid = (n: number) =>
+    n === 1 ? "grid-cols-1" : n === 2 ? "grid-cols-2" : "grid-cols-3";
 
   return (
-    <div className="min-h-screen flex flex-col items-center" style={{ background: theme.background }}>
+    <div className="min-h-screen" style={{ background: theme.background }}>
 
-      {/* ── Cover photo ─────────────────────────────── */}
-      {hasCover && (
-        <div className="w-full h-52 relative shrink-0">
-          <Image
-            src={profile.coverPhotoUrl!}
-            alt="Cover"
-            fill
-            className="object-cover"
-            priority
-            unoptimized
-          />
+      {/* ── HERO ──────────────────────────────────────────────────────── */}
+      <div className="relative w-full h-72 overflow-hidden">
+        {hasCover ? (
+          <>
+            <Image
+              src={profile.coverPhotoUrl!}
+              alt="Cover"
+              fill
+              className="object-cover"
+              priority
+              unoptimized
+            />
+            {/* cinematic gradient fade */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `linear-gradient(to bottom,
+                  rgba(0,0,0,0.06) 0%,
+                  rgba(0,0,0,0.22) 45%,
+                  ${theme.background} 100%)`,
+              }}
+            />
+          </>
+        ) : (
+          /* No cover: atmospheric radial glow */
           <div
             className="absolute inset-0"
-            style={{ background: `linear-gradient(to bottom, transparent 40%, ${theme.background} 100%)` }}
+            style={{
+              background: `
+                radial-gradient(ellipse 110% 90% at 50% 0%, ${theme.accent}28 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 85%, ${theme.accent}10 0%, transparent 55%),
+                ${theme.surface}`,
+            }}
           />
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* ── Profile content ─────────────────────────── */}
-      <div
-        className="w-full max-w-[390px] px-5 pb-20"
-        style={{ marginTop: hasCover ? "-3.5rem" : "3rem" }}
-      >
+      {/* ── CONTENT ───────────────────────────────────────────────────── */}
+      <div className="max-w-[480px] mx-auto px-5 pb-24">
+
+        {/* Avatar — overlapping hero */}
+        <motion.div
+          className="flex justify-center -mt-16 mb-5 relative z-10"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <div
+            className="relative w-32 h-32 rounded-full overflow-hidden flex items-center justify-center"
+            style={{
+              border: `4px solid ${theme.background}`,
+              boxShadow: `0 0 0 2px ${theme.accent}50,
+                          0 12px 48px rgba(0,0,0,0.55),
+                          0 0 80px ${theme.accent}18`,
+              background: `${theme.accent}15`,
+            }}
+          >
+            {profile.photoURL ? (
+              <Image
+                src={profile.photoURL}
+                alt={profile.displayName || "Profile"}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <span className="text-4xl font-bold" style={{ color: theme.accent }}>
+                {profile.displayName?.[0]?.toUpperCase() || "?"}
+              </span>
+            )}
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
         >
 
-          {/* ── Avatar + identity ─────────────────────── */}
-          <div className="flex flex-col items-center text-center mb-7">
-            <div
-              className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center mb-4 shrink-0"
-              style={{
-                border: `3px solid ${theme.accent}`,
-                background: `${theme.accent}18`,
-                boxShadow: `0 0 0 6px ${theme.accent}12`,
-              }}
+          {/* ── IDENTITY ─────────────────────────────────────────────── */}
+          <div className="text-center mb-9">
+            <h1
+              className="font-bold tracking-tight leading-tight"
+              style={{ fontSize: "clamp(26px,7vw,34px)", color: theme.text }}
             >
-              {profile.photoURL ? (
-                <Image
-                  src={profile.photoURL}
-                  alt={profile.displayName || "Profile"}
-                  width={112}
-                  height={112}
-                  className="w-full h-full object-cover"
-                  unoptimized
-                />
-              ) : (
-                <span className="text-3xl font-bold" style={{ color: theme.accent }}>
-                  {profile.displayName?.[0]?.toUpperCase() || "?"}
-                </span>
-              )}
-            </div>
-
-            <h1 className="text-2xl font-bold leading-tight" style={{ color: theme.text }}>
               {profile.displayName || "—"}
             </h1>
 
             {profile.title && (
-              <p className="text-sm mt-1" style={{ color: theme.subtext }}>
+              <p className="text-[16px] mt-2 font-medium" style={{ color: theme.subtext }}>
                 {profile.title}
               </p>
             )}
 
             {profile.location && (
               <span
-                className="inline-flex items-center gap-1 text-xs mt-2 px-2.5 py-1 rounded-full"
-                style={{ background: `${theme.accent}12`, color: theme.subtext }}
+                className="inline-flex items-center gap-1.5 text-xs mt-3.5 px-3.5 py-1.5 rounded-full"
+                style={{
+                  background: `${theme.accent}12`,
+                  border: `1px solid ${theme.accent}28`,
+                  color: theme.subtext,
+                }}
               >
-                <MapPin className="w-3 h-3" />
+                <MapPin className="w-3 h-3 shrink-0" style={{ color: theme.accent }} />
                 {profile.location}
               </span>
             )}
 
             {profile.bio && (
               <p
-                className="text-sm mt-4 leading-relaxed max-w-[300px]"
-                style={{ color: theme.subtext }}
+                className="mt-5 leading-[1.85] max-w-sm mx-auto"
+                style={{ fontSize: "15px", color: theme.subtext }}
               >
                 {profile.bio}
               </p>
             )}
           </div>
 
-          {/* ── Action buttons ────────────────────────── */}
-          <div className="space-y-2.5 mb-5">
+          {/* ── ACTION ZONE ──────────────────────────────────────────── */}
+          <div className="space-y-3 mb-9">
 
-            {/* Save Contact — always primary CTA */}
-            <button
+            {/* Primary CTA */}
+            <motion.button
+              whileTap={{ scale: 0.985 }}
               onClick={handleSaveContact}
-              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-semibold transition-opacity hover:opacity-85 active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-3 rounded-2xl font-semibold text-white"
               style={{
-                background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}cc)`,
-                color: "#fff",
-                boxShadow: `0 4px 20px ${theme.accent}30`,
+                padding: "17px 24px",
+                fontSize: "16px",
+                letterSpacing: "-0.01em",
+                background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accent}d8 100%)`,
+                boxShadow: `0 6px 28px ${theme.accent}42, 0 1px 0 rgba(255,255,255,0.12) inset`,
               }}
             >
-              <UserPlus className="w-4 h-4" />
+              <UserPlus className="w-5 h-5 shrink-0" />
               Save Contact
-            </button>
+            </motion.button>
 
-            {/* Call / WhatsApp / Email — icon-tile row */}
-            {(profile.phone || profile.whatsapp || profile.email) && (
-              <div className="flex gap-2">
-                {profile.phone && (
-                  <button
-                    onClick={() => handleAction("Call", `tel:${profile.phone}`)}
-                    className="flex-1 flex flex-col items-center gap-1.5 py-3.5 rounded-2xl text-xs font-medium transition-opacity hover:opacity-80 active:scale-[0.97]"
-                    style={btnBase}
+            {/* Contact tiles */}
+            {contactTiles.length > 0 && (
+              <div className={`grid gap-2.5 ${tilesGrid(contactTiles.length)}`}>
+                {contactTiles.map(({ label, href, icon }) => (
+                  <motion.button
+                    key={label}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => handleAction(label, href)}
+                    className="flex flex-col items-center gap-2 rounded-2xl font-medium transition-opacity hover:opacity-80"
+                    style={{
+                      padding: "15px 12px",
+                      background: theme.buttonBg,
+                      border: `1px solid ${theme.border}`,
+                      color: theme.text,
+                      fontSize: "12px",
+                    }}
                   >
-                    <Phone className="w-5 h-5" style={{ color: theme.accent }} />
-                    Call
-                  </button>
-                )}
-                {profile.whatsapp && (
-                  <button
-                    onClick={() => handleAction("WhatsApp", `https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`)}
-                    className="flex-1 flex flex-col items-center gap-1.5 py-3.5 rounded-2xl text-xs font-medium transition-opacity hover:opacity-80 active:scale-[0.97]"
-                    style={btnBase}
-                  >
-                    <MessageCircle className="w-5 h-5" style={{ color: "#25d366" }} />
-                    WhatsApp
-                  </button>
-                )}
-                {profile.email && (
-                  <button
-                    onClick={() => handleAction("Email", `mailto:${profile.email}`)}
-                    className="flex-1 flex flex-col items-center gap-1.5 py-3.5 rounded-2xl text-xs font-medium transition-opacity hover:opacity-80 active:scale-[0.97]"
-                    style={btnBase}
-                  >
-                    <Mail className="w-5 h-5" style={{ color: theme.accent }} />
-                    Email
-                  </button>
-                )}
+                    {icon}
+                    {label}
+                  </motion.button>
+                ))}
               </div>
             )}
 
-            {/* LinkedIn / Website — secondary row */}
-            {(profile.linkedin || profile.website) && (
-              <div className="flex gap-2">
-                {profile.linkedin && (
-                  <button
-                    onClick={() => handleAction("LinkedIn", profile.linkedin!)}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium transition-opacity hover:opacity-80 active:scale-[0.97]"
-                    style={btnBase}
+            {/* LinkedIn / Website */}
+            {secondaryTiles.length > 0 && (
+              <div className={`grid gap-2.5 ${tilesGrid(secondaryTiles.length)}`}>
+                {secondaryTiles.map(({ label, href, icon }) => (
+                  <motion.button
+                    key={label}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleAction(label, href)}
+                    className="flex items-center justify-center gap-2.5 rounded-2xl font-medium transition-opacity hover:opacity-80"
+                    style={{
+                      padding: "14px 20px",
+                      background: theme.buttonBg,
+                      border: `1px solid ${theme.border}`,
+                      color: theme.text,
+                      fontSize: "14px",
+                    }}
                   >
-                    <PlatformSvg platform="linkedin" size={15} />
-                    <span style={{ color: theme.text }}>LinkedIn</span>
-                  </button>
-                )}
-                {profile.website && (
-                  <button
-                    onClick={() => handleAction("Website", profile.website!)}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium transition-opacity hover:opacity-80 active:scale-[0.97]"
-                    style={btnBase}
-                  >
-                    <Globe className="w-4 h-4" style={{ color: theme.accent }} />
-                    <span style={{ color: theme.text }}>Website</span>
-                  </button>
-                )}
+                    <span style={{ color: label === "LinkedIn" ? "#0a66c2" : theme.accent }}>
+                      {icon}
+                    </span>
+                    {label}
+                  </motion.button>
+                ))}
               </div>
             )}
           </div>
 
-          {/* ── Company card ──────────────────────────── */}
+          {/* ── COMPANY CARD ─────────────────────────────────────────── */}
           {profile.companyName && (
             <div
-              className="flex items-center gap-3 p-3.5 rounded-2xl mb-5"
-              style={{ background: theme.surface, border: `1px solid ${theme.border}` }}
+              className="rounded-2xl mb-9 overflow-hidden"
+              style={{
+                background: theme.surface,
+                border: `1px solid ${theme.border}`,
+                boxShadow: `0 4px 24px rgba(0,0,0,0.18)`,
+              }}
             >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-                style={{ background: theme.buttonBg }}
-              >
-                {profile.companyLogoUrl ? (
-                  <Image
-                    src={profile.companyLogoUrl}
-                    alt={profile.companyName}
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-contain"
-                    unoptimized
-                  />
-                ) : (
-                  <Building2 className="w-5 h-5" style={{ color: theme.subtext }} />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold truncate" style={{ color: theme.text }}>
-                  {profile.companyName}
-                </p>
-                {profile.companyWebsite && (
-                  <a
-                    href={profile.companyWebsite}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => trackButtonClick(profile.uid, "Company Website")}
-                    className="text-xs truncate block mt-0.5 hover:opacity-70 transition-opacity"
-                    style={{ color: theme.accent }}
+              <div className="p-5">
+                <div className="flex items-center gap-4">
+                  {/* Logo */}
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
+                    style={{
+                      background: theme.buttonBg,
+                      border: `1px solid ${theme.border}`,
+                    }}
                   >
-                    {profile.companyWebsite.replace(/^https?:\/\//, "")}
-                  </a>
+                    {profile.companyLogoUrl ? (
+                      <Image
+                        src={profile.companyLogoUrl}
+                        alt={profile.companyName}
+                        width={56}
+                        height={56}
+                        className="w-full h-full object-contain p-1.5"
+                        unoptimized
+                      />
+                    ) : (
+                      <Building2 className="w-6 h-6" style={{ color: theme.subtext }} />
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="font-bold leading-tight truncate"
+                      style={{ fontSize: "16px", color: theme.text }}
+                    >
+                      {profile.companyName}
+                    </p>
+                    {profile.companyIndustry && (
+                      <p className="text-xs font-medium mt-1" style={{ color: theme.accent }}>
+                        {profile.companyIndustry}
+                      </p>
+                    )}
+                    {profile.companyWebsite && !profile.companyIndustry && (
+                      <p
+                        className="text-xs mt-1 truncate"
+                        style={{ color: theme.subtext }}
+                      >
+                        {profile.companyWebsite.replace(/^https?:\/\//, "")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {profile.companyDescription && (
+                  <p
+                    className="text-sm leading-relaxed mt-4"
+                    style={{ color: theme.subtext }}
+                  >
+                    {profile.companyDescription}
+                  </p>
                 )}
               </div>
-              <ExternalLink className="w-4 h-4 shrink-0" style={{ color: theme.subtext }} />
+
+              {/* Visit website CTA strip */}
+              {profile.companyWebsite && (
+                <a
+                  href={profile.companyWebsite}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackButtonClick(profile.uid, "Company Website")}
+                  className="flex items-center justify-between transition-opacity hover:opacity-70"
+                  style={{
+                    padding: "13px 20px",
+                    borderTop: `1px solid ${theme.border}`,
+                    color: theme.accent,
+                    fontSize: "13px",
+                    fontWeight: 500,
+                  }}
+                >
+                  <span>Visit Website</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
           )}
 
-          {/* ── Social platform icons ─────────────────── */}
-          {(socialEntries.length > 0 || legacySocials.length > 0) && (
-            <div className="flex flex-wrap justify-center gap-2.5 mb-5">
-              {socialEntries.map(({ platform, url }) => (
-                <a
-                  key={platform}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackButtonClick(profile.uid, platform)}
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                  style={{
-                    background: `${PLATFORM_COLORS[platform] || theme.accent}18`,
-                    border: `1px solid ${PLATFORM_COLORS[platform] || theme.accent}30`,
-                    color: PLATFORM_COLORS[platform] || theme.accent,
-                  }}
-                  aria-label={platform}
-                >
-                  <PlatformSvg platform={platform} size={17} />
-                </a>
-              ))}
-              {legacySocials.map((s) => {
-                const p = s.platform.toLowerCase();
+          {/* ── SOCIAL ICONS ─────────────────────────────────────────── */}
+          {allSocials.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-3 mb-9">
+              {allSocials.map(({ platform, url }) => {
+                const brandColor = PLATFORM_COLORS[platform] || theme.accent;
                 return (
-                  <a
-                    key={s.id}
-                    href={s.url}
+                  <motion.a
+                    key={platform}
+                    href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => trackButtonClick(profile.uid, p)}
-                    className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                    onClick={() => trackButtonClick(profile.uid, platform)}
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    whileTap={{ scale: 0.91 }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
                     style={{
-                      background: `${PLATFORM_COLORS[p] || theme.accent}18`,
-                      border: `1px solid ${PLATFORM_COLORS[p] || theme.accent}30`,
-                      color: PLATFORM_COLORS[p] || theme.accent,
+                      background: `${brandColor}1e`,
+                      border: `1px solid ${brandColor}38`,
+                      color: brandColor,
+                      boxShadow: `0 2px 14px ${brandColor}22`,
                     }}
-                    aria-label={p}
+                    aria-label={platform}
                   >
-                    <PlatformSvg platform={p} size={17} />
-                  </a>
+                    <PlatformSvg platform={platform} size={19} />
+                  </motion.a>
                 );
               })}
             </div>
           )}
 
-          {/* ── Custom links ──────────────────────────── */}
+          {/* ── CUSTOM LINKS ─────────────────────────────────────────── */}
           {enabledLinks.length > 0 && (
-            <div className="space-y-2 mb-5">
-              {enabledLinks.map((link) => (
+            <div className="space-y-2.5 mb-9">
+              {enabledLinks.map((link, i) => (
                 <motion.button
                   key={link.id}
-                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + i * 0.04 }}
+                  whileTap={{ scale: 0.985 }}
                   onClick={() => handleAction(link.label, getLinkHref(link))}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm transition-opacity hover:opacity-80"
-                  style={btnBase}
+                  className="w-full flex items-center gap-4 rounded-2xl text-left transition-opacity hover:opacity-80"
+                  style={{
+                    padding: "16px 20px",
+                    background: theme.buttonBg,
+                    border: `1px solid ${theme.border}`,
+                  }}
                 >
-                  {getLinkIcon(link.type, theme.accent)}
-                  <span className="flex-1 text-left font-medium" style={{ color: theme.text }}>
+                  {link.type === "call"
+                    ? <Phone className="w-5 h-5 shrink-0" style={{ color: theme.accent }} />
+                    : link.type === "whatsapp"
+                      ? <MessageCircle className="w-5 h-5 shrink-0" style={{ color: "#25d366" }} />
+                      : link.type === "email"
+                        ? <Mail className="w-5 h-5 shrink-0" style={{ color: theme.accent }} />
+                        : <Link2 className="w-5 h-5 shrink-0" style={{ color: theme.accent }} />
+                  }
+                  <span
+                    className="flex-1 font-medium"
+                    style={{ fontSize: "15px", color: theme.text }}
+                  >
                     {link.label}
                   </span>
-                  <ChevronRight className="w-4 h-4 shrink-0" style={{ color: theme.subtext }} />
+                  <ChevronRight
+                    className="w-4 h-4 shrink-0"
+                    style={{ color: theme.subtext, opacity: 0.45 }}
+                  />
                 </motion.button>
               ))}
             </div>
           )}
 
-          {/* ── Footer actions ────────────────────────── */}
-          <div className="flex items-center justify-center gap-6 mt-4 mb-2">
-            <button
+          {/* ── FOOTER ACTIONS ───────────────────────────────────────── */}
+          <div className="flex items-center justify-center gap-3 mb-5">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
               onClick={handleShare}
-              className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-60"
-              style={{ color: theme.subtext }}
+              className="flex items-center gap-2 rounded-xl font-medium transition-opacity hover:opacity-75"
+              style={{
+                padding: "10px 20px",
+                background: theme.buttonBg,
+                border: `1px solid ${theme.border}`,
+                color: theme.subtext,
+                fontSize: "13px",
+              }}
             >
-              <Share2 className="w-3.5 h-3.5" />
+              <Share2 className="w-4 h-4" />
               Share
-            </button>
-            <button
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
               onClick={() => setShowQR((v) => !v)}
-              className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-60"
-              style={{ color: theme.subtext }}
+              className="flex items-center gap-2 rounded-xl font-medium transition-all hover:opacity-80"
+              style={{
+                padding: "10px 20px",
+                background: showQR ? `${theme.accent}16` : theme.buttonBg,
+                border: `1px solid ${showQR ? `${theme.accent}38` : theme.border}`,
+                color: showQR ? theme.accent : theme.subtext,
+                fontSize: "13px",
+              }}
             >
-              <QrCode className="w-3.5 h-3.5" />
-              {showQR ? "Hide QR" : "Show QR"}
-            </button>
+              <QrCode className="w-4 h-4" />
+              QR Code
+            </motion.button>
           </div>
 
+          {/* ── QR CARD ──────────────────────────────────────────────── */}
           <AnimatePresence>
             {showQR && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="flex justify-center overflow-hidden mt-3"
+                initial={{ opacity: 0, y: 14, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className="mb-9 rounded-3xl overflow-hidden bg-white"
+                style={{
+                  boxShadow:
+                    "0 24px 64px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.18)",
+                }}
               >
-                <div className="p-4 rounded-2xl bg-white shadow-lg">
-                  <QRCodeDisplay url={profileUrl} username={profile.username} />
+                <div className="px-6 pt-6 pb-1">
+                  <p className="text-center text-[11px] font-bold text-gray-400 uppercase tracking-[0.12em]">
+                    Scan to Connect
+                  </p>
+                </div>
+                <div className="flex justify-center px-6 py-4">
+                  <ProfileQR
+                    url={profileUrl}
+                    username={profile.username || "profile"}
+                  />
+                </div>
+                <div className="px-6 pb-5">
+                  <p className="text-center text-[11px] text-gray-400 truncate">
+                    {profileUrl}
+                  </p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <p className="text-center text-xs mt-10" style={{ color: `${theme.subtext}44` }}>
-            Powered by TikTag
+          {/* Watermark */}
+          <p
+            className="text-center text-xs mt-6 pb-4"
+            style={{ color: `${theme.subtext}40` }}
+          >
+            Powered by{" "}
+            <span style={{ color: theme.accent, opacity: 0.55 }}>TikTag</span>
           </p>
 
         </motion.div>
