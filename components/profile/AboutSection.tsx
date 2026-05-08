@@ -102,20 +102,35 @@ export default function AboutSection({ profile, theme }: AboutSectionProps) {
         >
           <SectionLabel theme={theme}>Company</SectionLabel>
           <motion.div
-            whileHover={{ scale: 1.003, y: -2 }}
-            transition={{ type: "spring", stiffness: 380, damping: 24 }}
-            className="rounded-[22px] overflow-hidden"
+            whileHover={{ scale: 1.008, y: -6 }}
+            transition={{ type: "spring", stiffness: 340, damping: 24 }}
+            className="rounded-[26px] overflow-hidden relative"
             style={{
-              background: `linear-gradient(150deg, ${theme.accent}0a 0%, transparent 60%), ${theme.surface}`,
-              border: `1px solid ${theme.border}`,
-              boxShadow: `0 8px 32px rgba(0,0,0,0.18), 0 1px 0 rgba(255,255,255,0.03) inset`,
+              background: `linear-gradient(145deg, ${theme.accent}0e 0%, ${theme.surface}f0 40%, ${theme.background}f8 100%)`,
+              border: `1px solid ${theme.accent}28`,
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              boxShadow: [
+                `0 24px 72px rgba(0,0,0,0.45)`,
+                `0 1px 0 rgba(255,255,255,0.08) inset`,
+                `0 -1px 0 rgba(0,0,0,0.25) inset`,
+                `0 0 0 1px ${theme.accent}12`,
+              ].join(", "),
             }}
           >
-            {/* Accent edge */}
+            {/* Iridescent metallic top edge */}
             <div style={{
-              height: 2,
-              background: `linear-gradient(90deg, transparent 5%, ${theme.accent}45 40%, ${theme.accent}65 50%, ${theme.accent}45 60%, transparent 95%)`,
+              height: 1,
+              background: `linear-gradient(90deg, transparent 5%, ${theme.accent}65 28%, rgba(255,255,255,0.45) 50%, ${theme.accent}65 72%, transparent 95%)`,
             }} />
+            {/* Inner ambient glow from top */}
+            <div
+              className="absolute top-0 inset-x-0 pointer-events-none"
+              style={{
+                height: 90,
+                background: `linear-gradient(180deg, ${theme.accent}0e 0%, transparent 100%)`,
+              }}
+            />
 
             <div className="p-5">
               <div className="flex items-start gap-4">

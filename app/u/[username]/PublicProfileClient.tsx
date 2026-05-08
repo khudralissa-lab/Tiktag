@@ -178,28 +178,46 @@ export default function PublicProfileClient({
     <div className="relative min-h-screen" style={{ background: theme.background }}>
       {/* ── Cinematic atmospheric background (fixed, full viewport) ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <AmbientOrb
-          color={`${theme.accent}16`}
-          x="-8%" y="-12%"
-          w={640} h={560}
-          duration={18}
-          blurAmount={100}
-        />
-        <AmbientOrb
-          color={`${theme.accent}0c`}
-          x="42%" y="48%"
-          w={560} h={480}
-          duration={22}
-          delay={6}
-          blurAmount={100}
-        />
+        {/* Layered depth gradient — breaks flat black */}
+        {theme.category !== "light" && (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(195deg, #080c18 0%, transparent 45%, #010205 100%)`,
+            }}
+          />
+        )}
+        {/* Top atmosphere */}
         <div
           className="absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse 110% 55% at 50% 0%, ${theme.accent}08 0%, transparent 68%)`,
+            background: `radial-gradient(ellipse 130% 50% at 50% 0%, ${theme.accent}0f 0%, transparent 65%)`,
           }}
         />
-        <GrainOverlay opacity={0.025} />
+        <AmbientOrb
+          color={`${theme.accent}18`}
+          x="-10%" y="-15%"
+          w={680} h={580}
+          duration={20}
+          blurAmount={110}
+        />
+        <AmbientOrb
+          color={`${theme.accent}0b`}
+          x="44%" y="52%"
+          w={580} h={500}
+          duration={26}
+          delay={7}
+          blurAmount={110}
+        />
+        {/* Depth grid */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.016) 1px, transparent 1px)`,
+            backgroundSize: "52px 52px",
+          }}
+        />
+        <GrainOverlay opacity={0.028} />
       </div>
 
       <div className="relative z-10 mx-auto w-full" style={{ maxWidth: 460 }}>

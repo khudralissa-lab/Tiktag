@@ -41,28 +41,39 @@ export default function LinksSection({ links, theme, onTrack }: LinksSectionProp
             whileTap={{ scale: 0.98 }}
             whileHover={{
               x: 5,
-              scale: 1.006,
-              boxShadow: `inset 3px 0 0 ${theme.accent}55, 0 8px 36px ${theme.accent}18, 0 2px 14px rgba(0,0,0,0.14)`,
+              scale: 1.008,
+              boxShadow: `inset 3px 0 0 ${theme.accent}55, 0 8px 36px ${theme.accent}20, 0 2px 14px rgba(0,0,0,0.18)`,
             }}
             onClick={() => onTrack(link.label, href)}
-            className="w-full flex items-center gap-4 rounded-[18px] text-left"
+            className="relative w-full flex items-center gap-4 rounded-[18px] text-left overflow-hidden"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...spr, delay: i * 0.05 }}
             style={{
               padding: "16px 18px",
-              background: theme.buttonBg,
-              border: `1px solid ${theme.border}`,
+              background: `linear-gradient(145deg, ${theme.accent}0c 0%, ${theme.surface}d8 50%, ${theme.background}e8 100%)`,
+              border: `1px solid ${theme.accent}22`,
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
               boxShadow: `inset 3px 0 0 rgba(0,0,0,0), 0 2px 14px rgba(0,0,0,0.10), 0 0 0 rgba(0,0,0,0)`,
             }}
           >
+            {/* Metallic top edge */}
+            <div
+              className="absolute top-0 inset-x-0 pointer-events-none"
+              style={{
+                height: 1,
+                background: `linear-gradient(90deg, transparent 5%, ${theme.accent}40 35%, rgba(255,255,255,0.22) 50%, ${theme.accent}40 65%, transparent 95%)`,
+              }}
+            />
             <motion.div
               whileHover={{ scale: 1.12 }}
               transition={{ type: "spring", stiffness: 400, damping: 22 }}
               className="w-10 h-10 rounded-[13px] flex items-center justify-center shrink-0"
               style={{
-                background: `${theme.accent}14`,
-                border: `1px solid ${theme.accent}28`,
+                background: `${theme.accent}18`,
+                border: `1px solid ${theme.accent}32`,
+                boxShadow: `0 2px 12px ${theme.accent}20`,
               }}
             >
               {linkIcon(link.type, theme.accent)}

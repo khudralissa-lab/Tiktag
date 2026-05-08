@@ -174,7 +174,7 @@ export default function ProfileHero({
             style={{
               fontSize: "clamp(24px, 7vw, 32px)",
               color: theme.text,
-              letterSpacing: "-0.03em",
+              letterSpacing: "-0.04em",
               textShadow: isLight ? "none" : "0 2px 24px rgba(0,0,0,0.25)",
             }}
           >
@@ -224,8 +224,9 @@ export default function ProfileHero({
               className="mt-3 mx-auto max-w-[360px]"
               style={{
                 fontSize: 14,
-                lineHeight: 1.75,
+                lineHeight: 1.85,
                 color: theme.subtext,
+                letterSpacing: "0.005em",
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical" as const,
@@ -242,8 +243,30 @@ export default function ProfileHero({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spr, delay: 0.16 }}
-          className="mt-5 space-y-2.5"
+          className="mt-5 relative overflow-hidden"
+          style={{
+            background: `linear-gradient(145deg, ${theme.accent}09 0%, ${theme.surface}90 40%, ${theme.background}b0 100%)`,
+            border: `1px solid ${theme.accent}1c`,
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            borderRadius: 24,
+            padding: "18px 16px 16px",
+            boxShadow: [
+              `0 20px 60px rgba(0,0,0,0.32)`,
+              `0 1px 0 rgba(255,255,255,0.06) inset`,
+              `0 -1px 0 rgba(0,0,0,0.20) inset`,
+            ].join(", "),
+          }}
         >
+          {/* Iridescent top edge */}
+          <div
+            className="absolute top-0 inset-x-0 pointer-events-none"
+            style={{
+              height: 1,
+              background: `linear-gradient(90deg, transparent 5%, ${theme.accent}50 28%, rgba(255,255,255,0.32) 50%, ${theme.accent}50 72%, transparent 95%)`,
+            }}
+          />
+          <div className="space-y-2.5">
           {/* Save Contact */}
           <motion.button
             whileTap={{ scale: 0.97 }}
@@ -331,6 +354,7 @@ export default function ProfileHero({
               Read full bio →
             </button>
           )}
+          </div>
         </motion.div>
       </div>
     </div>

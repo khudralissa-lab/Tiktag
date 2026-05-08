@@ -25,19 +25,26 @@ export default function TabNavigation({ tabs, activeTab, onChange, theme }: TabN
 
   return (
     <div
-      className="sticky top-0 z-40 px-4 py-2.5"
+      className="sticky top-0 z-40 px-4 py-3"
       style={{
-        background: `${theme.background}d0`,
-        backdropFilter: "blur(32px)",
-        WebkitBackdropFilter: "blur(32px)",
-        borderBottom: `1px solid ${theme.accent}14`,
+        background: isLight ? `${theme.background}c8` : `${theme.background}b5`,
+        backdropFilter: "blur(48px)",
+        WebkitBackdropFilter: "blur(48px)",
+        borderBottom: `1px solid ${theme.accent}12`,
       }}
     >
       <div
-        className="flex gap-0.5 p-1 rounded-[18px] overflow-x-auto"
+        className="flex gap-0.5 p-1 rounded-[20px] overflow-x-auto"
         style={{
-          background: isLight ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.04)",
-          border: `1px solid ${theme.accent}18`,
+          background: isLight
+            ? "linear-gradient(135deg, rgba(0,0,0,0.06), rgba(0,0,0,0.03))"
+            : "linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025))",
+          border: `1px solid ${theme.accent}22`,
+          boxShadow: [
+            "inset 0 1px 0 rgba(255,255,255,0.07)",
+            "inset 0 -1px 0 rgba(0,0,0,0.18)",
+            "0 4px 24px rgba(0,0,0,0.22)",
+          ].join(", "),
           scrollbarWidth: "none",
         }}
       >
@@ -56,7 +63,12 @@ export default function TabNavigation({ tabs, activeTab, onChange, theme }: TabN
                   className="absolute inset-0 rounded-[14px]"
                   style={{
                     background: pillBg,
-                    boxShadow: `0 2px 20px ${theme.accent}30, 0 1px 0 rgba(255,255,255,0.10) inset`,
+                    border: `1px solid ${theme.accent}45`,
+                    boxShadow: [
+                      `0 2px 28px ${theme.accent}38`,
+                      "0 1px 0 rgba(255,255,255,0.16) inset",
+                      "0 -1px 0 rgba(0,0,0,0.15) inset",
+                    ].join(", "),
                   }}
                   transition={{ type: "spring", stiffness: 440, damping: 34 }}
                 />
