@@ -118,44 +118,62 @@ export default function ContactActions({
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spr, delay: 0.04 }}
         >
-          {contactActions.map(({ label, href, icon, color }, i) => (
-            <motion.button
-              key={label}
-              whileTap={{ scale: 0.93 }}
-              whileHover={{ y: -3, scale: 1.012 }}
-              onClick={() => handleAction(label, href)}
-              className="flex flex-col items-center gap-2.5 rounded-[18px] font-medium"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...spr, delay: 0.06 + i * 0.06 }}
-              style={{ ...tileStyle, padding: "18px 12px", fontSize: 13, color: theme.text }}
-            >
-              <span style={{ color }}>{icon}</span>
-              {label}
-            </motion.button>
-          ))}
+          {contactActions.map(({ label, href, icon, color }, i) => {
+            const isWA = label === "WhatsApp";
+            return (
+              <motion.button
+                key={label}
+                whileTap={{ scale: 0.93 }}
+                whileHover={{ y: -4, scale: 1.015 }}
+                onClick={() => handleAction(label, href)}
+                className="flex flex-col items-center gap-3 rounded-[18px] font-semibold"
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...spr, delay: 0.06 + i * 0.06 }}
+                style={{
+                  padding: "20px 12px",
+                  fontSize: 13,
+                  color: isWA ? "#25d366" : theme.text,
+                  background: isWA ? "rgba(37,211,102,0.10)" : tileStyle.background,
+                  border: isWA ? "1px solid rgba(37,211,102,0.28)" : tileStyle.border,
+                  boxShadow: isWA
+                    ? "0 2px 14px rgba(37,211,102,0.12)"
+                    : tileStyle.boxShadow,
+                }}
+              >
+                <span style={{ color }}>{icon}</span>
+                {label}
+              </motion.button>
+            );
+          })}
         </motion.div>
       )}
 
       {/* Save contact */}
       <motion.button
         whileTap={{ scale: 0.975 }}
-        whileHover={{ scale: 1.006 }}
+        whileHover={{ scale: 1.008, y: -1 }}
         onClick={onSaveContact}
         className="relative w-full flex items-center justify-center gap-2.5 rounded-[18px] font-semibold text-white overflow-hidden"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...spr, delay: 0.12 }}
         style={{
-          padding: "16px 24px",
+          padding: "17px 24px",
           fontSize: 15.5,
           letterSpacing: "-0.015em",
           background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}cc)`,
-          boxShadow: `0 10px 36px ${theme.accent}38`,
+          boxShadow: `0 12px 40px ${theme.accent}40, 0 1px 0 rgba(255,255,255,0.18) inset`,
         }}
       >
-        <UserPlus className="w-4 h-4 shrink-0" />
-        Save Contact
+        <motion.div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.12) 50%, transparent 80%)" }}
+          animate={{ x: ["-100%", "120%"] }}
+          transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
+        />
+        <UserPlus className="w-4 h-4 shrink-0 relative z-10" />
+        <span className="relative z-10">Save Contact</span>
       </motion.button>
 
       {/* Booking */}

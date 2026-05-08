@@ -33,8 +33,8 @@ export default function SocialGrid({ uid, socials, theme }: SocialGridProps) {
           ? `repeat(${socials.length}, 1fr)`
           : socials.length <= 4
           ? "repeat(4, 1fr)"
-          : "repeat(3, 1fr)",
-        gap: "20px 12px",
+          : "repeat(4, 1fr)",
+        gap: "24px 16px",
       }}
     >
       {socials.map(({ platform, url }, i) => {
@@ -45,7 +45,7 @@ export default function SocialGrid({ uid, socials, theme }: SocialGridProps) {
           <motion.div
             key={platform}
             className="flex flex-col items-center gap-2.5"
-            initial={{ opacity: 0, y: 16, scale: 0.88 }}
+            initial={{ opacity: 0, y: 18, scale: 0.85 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ ...spr, delay: 0.04 + i * 0.06 }}
           >
@@ -54,23 +54,23 @@ export default function SocialGrid({ uid, socials, theme }: SocialGridProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackButtonClick(uid, platform)}
-              whileHover={{ scale: 1.14, y: -4 }}
+              whileHover={{ scale: 1.18, y: -6 }}
               whileTap={{ scale: 0.88 }}
               className="flex items-center justify-center rounded-full"
               style={{
-                width: 64, height: 64,
+                width: 76, height: 76,
                 background: `${brandColor}18`,
-                border: `1.5px solid ${brandColor}35`,
+                border: `1.5px solid ${brandColor}38`,
                 color: brandColor,
-                boxShadow: `0 4px 20px ${brandColor}20`,
+                boxShadow: `0 6px 28px ${brandColor}35, 0 2px 8px ${brandColor}18`,
               }}
               aria-label={label}
             >
-              <PlatformSvg platform={platform} size={24} />
+              <PlatformSvg platform={platform} size={28} />
             </motion.a>
             <span
               className="font-semibold text-center"
-              style={{ fontSize: 11, color: `${theme.subtext}70`, letterSpacing: "0.02em" }}
+              style={{ fontSize: 11.5, color: `${theme.subtext}75`, letterSpacing: "0.02em" }}
             >
               {label}
             </span>

@@ -40,7 +40,7 @@ export default function ProfileHero({
   return (
     <div style={{ background: theme.background }}>
       {/* ── Cover ─────────────────────────────────── */}
-      <div className="relative w-full overflow-hidden" style={{ height: 160 }}>
+      <div className="relative w-full overflow-hidden" style={{ height: 180 }}>
         {hasCover ? (
           <>
             <Image
@@ -102,29 +102,29 @@ export default function ProfileHero({
       </div>
 
       {/* ── Identity ──────────────────────────────── */}
-      <div className="px-5 pb-5 text-center" style={{ background: theme.background }}>
+      <div className="px-5 pb-6 text-center" style={{ background: theme.background }}>
         {/* Avatar */}
-        <div className="flex justify-center" style={{ marginTop: -44 }}>
+        <div className="flex justify-center" style={{ marginTop: -52 }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ ...spr, delay: 0.05 }}
           >
             <motion.div
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             >
               <div
                 className="relative flex items-center justify-center overflow-hidden"
                 style={{
-                  width: 88, height: 88, borderRadius: "50%",
-                  border: `3px solid ${theme.background}`,
+                  width: 104, height: 104, borderRadius: "50%",
+                  border: `3.5px solid ${theme.background}`,
                   background: `${theme.accent}18`,
                   boxShadow: [
-                    `0 0 0 1.5px ${theme.accent}50`,
-                    `0 0 0 6px ${theme.accent}12`,
-                    `0 20px 56px rgba(0,0,0,0.60)`,
-                    `0 0 80px ${theme.accent}1a`,
+                    `0 0 0 1.5px ${theme.accent}55`,
+                    `0 0 0 7px ${theme.accent}12`,
+                    `0 24px 64px rgba(0,0,0,0.65)`,
+                    `0 0 100px ${theme.accent}22`,
                   ].join(", "),
                 }}
               >
@@ -137,7 +137,7 @@ export default function ProfileHero({
                     unoptimized
                   />
                 ) : (
-                  <span className="font-bold select-none" style={{ fontSize: 34, color: theme.accent }}>
+                  <span className="font-bold select-none" style={{ fontSize: 40, color: theme.accent }}>
                     {profile.displayName?.[0]?.toUpperCase() || "?"}
                   </span>
                 )}
@@ -156,17 +156,17 @@ export default function ProfileHero({
           <h1
             className="font-black leading-tight"
             style={{
-              fontSize: "clamp(22px, 6vw, 28px)",
+              fontSize: "clamp(24px, 7vw, 32px)",
               color: theme.text,
-              letterSpacing: "-0.025em",
-              textShadow: isLight ? "none" : "0 2px 20px rgba(0,0,0,0.2)",
+              letterSpacing: "-0.03em",
+              textShadow: isLight ? "none" : "0 2px 24px rgba(0,0,0,0.25)",
             }}
           >
             {profile.displayName || "—"}
           </h1>
 
           {profile.title && (
-            <p className="mt-1.5 font-semibold" style={{ fontSize: 14, color: theme.accent, opacity: 0.9 }}>
+            <p className="mt-2 font-semibold" style={{ fontSize: 15, color: theme.accent, opacity: 0.9 }}>
               {profile.title}
             </p>
           )}
@@ -205,10 +205,10 @@ export default function ProfileHero({
           {/* Bio preview — 2 lines max, full bio is in About tab */}
           {profile.bio && (
             <p
-              className="mt-3 mx-auto max-w-[340px]"
+              className="mt-3 mx-auto max-w-[360px]"
               style={{
-                fontSize: 13.5,
-                lineHeight: 1.7,
+                fontSize: 14,
+                lineHeight: 1.75,
                 color: theme.subtext,
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
@@ -277,24 +277,32 @@ export default function ProfileHero({
 
           {/* Quick actions row */}
           <div className="flex gap-2">
-            {quickActions.map(({ label, href, icon, onClick }) => (
-              <motion.button
-                key={label}
-                whileTap={{ scale: 0.93 }}
-                onClick={onClick ?? (() => handleAction(label, href))}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-[14px] font-medium"
-                style={{
-                  padding: "10px 8px",
-                  fontSize: 12.5,
-                  color: theme.subtext,
-                  background: `${isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.05)"}`,
-                  border: `1px solid ${theme.border}`,
-                }}
-              >
-                <span style={{ color: theme.accent }}>{icon}</span>
-                {label}
-              </motion.button>
-            ))}
+            {quickActions.map(({ label, href, icon, onClick }) => {
+              const isWA = label === "WhatsApp";
+              return (
+                <motion.button
+                  key={label}
+                  whileTap={{ scale: 0.93 }}
+                  whileHover={{ scale: 1.03 }}
+                  onClick={onClick ?? (() => handleAction(label, href))}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-[14px] font-semibold"
+                  style={{
+                    padding: "11px 8px",
+                    fontSize: 12.5,
+                    color: isWA ? "#25d366" : theme.subtext,
+                    background: isWA
+                      ? "rgba(37,211,102,0.10)"
+                      : (isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.05)"),
+                    border: isWA
+                      ? "1px solid rgba(37,211,102,0.28)"
+                      : `1px solid ${theme.border}`,
+                  }}
+                >
+                  <span style={{ color: isWA ? "#25d366" : theme.accent }}>{icon}</span>
+                  {label}
+                </motion.button>
+              );
+            })}
           </div>
 
           {/* About tab hint if bio is truncated */}

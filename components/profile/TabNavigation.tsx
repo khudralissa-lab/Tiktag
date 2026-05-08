@@ -17,24 +17,24 @@ interface TabNavigationProps {
 
 export default function TabNavigation({ tabs, activeTab, onChange, theme }: TabNavigationProps) {
   const isLight = theme.category === "light";
-  const pillBg = isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.11)";
-  const activeColor = theme.text;
-  const inactiveColor = isLight ? "rgba(0,0,0,0.38)" : "rgba(255,255,255,0.38)";
+  const pillBg = isLight ? `${theme.accent}16` : `${theme.accent}22`;
+  const activeColor = theme.accent;
+  const inactiveColor = isLight ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.32)";
   const barBg = isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.04)";
-  const barBorder = isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.07)";
+  const barBorder = isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)";
 
   return (
     <div
-      className="sticky top-0 z-40 px-4 py-2"
+      className="sticky top-0 z-40 px-4 py-2.5"
       style={{
-        background: `${theme.background}e6`,
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
+        background: `${theme.background}ee`,
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
         borderBottom: `1px solid ${barBorder}`,
       }}
     >
       <div
-        className="flex gap-0.5 p-1 rounded-[16px] overflow-x-auto"
+        className="flex gap-0.5 p-1 rounded-[18px] overflow-x-auto"
         style={{
           background: barBg,
           border: `1px solid ${barBorder}`,
@@ -47,14 +47,17 @@ export default function TabNavigation({ tabs, activeTab, onChange, theme }: TabN
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              className="relative flex-1 min-w-0 px-3 py-1.5 rounded-xl text-[12.5px] font-semibold transition-colors shrink-0 whitespace-nowrap"
+              className="relative flex-1 min-w-0 px-3 py-2 rounded-[14px] text-[13px] font-semibold transition-colors shrink-0 whitespace-nowrap"
               style={{ color: active ? activeColor : inactiveColor }}
             >
               {active && (
                 <motion.div
                   layoutId="tab-pill"
-                  className="absolute inset-0 rounded-xl"
-                  style={{ background: pillBg }}
+                  className="absolute inset-0 rounded-[14px]"
+                  style={{
+                    background: pillBg,
+                    boxShadow: `0 2px 12px ${theme.accent}18`,
+                  }}
                   transition={{ type: "spring", stiffness: 420, damping: 32 }}
                 />
               )}

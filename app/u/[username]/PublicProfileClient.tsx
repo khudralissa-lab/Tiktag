@@ -175,67 +175,65 @@ export default function PublicProfileClient({
     : visibleTabs[0]?.id ?? "about";
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: theme.background }}>
-      {/* Fixed-position hero — does NOT scroll away */}
-      <ProfileHero
-        profile={profile}
-        theme={theme}
-        onSaveContact={handleSaveContact}
-        onShare={handleShare}
-        onTabChange={handleTabChange}
-      />
+    <div className="min-h-screen" style={{ background: theme.background }}>
+      <div className="mx-auto w-full" style={{ maxWidth: 460 }}>
+        <ProfileHero
+          profile={profile}
+          theme={theme}
+          onSaveContact={handleSaveContact}
+          onShare={handleShare}
+          onTabChange={handleTabChange}
+        />
 
-      {/* Sticky tab bar — sticks once hero scrolls out of view */}
-      <TabNavigation
-        tabs={visibleTabs}
-        activeTab={safeTab}
-        onChange={handleTabChange}
-        theme={theme}
-      />
+        <TabNavigation
+          tabs={visibleTabs}
+          activeTab={safeTab}
+          onChange={handleTabChange}
+          theme={theme}
+        />
 
-      {/* Tab content */}
-      <div className="max-w-lg mx-auto px-5 pt-6">
-        <AnimatePresence mode="wait" custom={dirRef.current}>
-          <motion.div
-            key={safeTab}
-            custom={dirRef.current}
-            variants={tabVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 380, damping: 32 }}
-          >
-            {safeTab === "about" && (
-              <AboutSection profile={profile} theme={theme} />
-            )}
-            {safeTab === "socials" && (
-              <SocialGrid uid={profile.uid} socials={allSocials} theme={theme} />
-            )}
-            {safeTab === "portfolio" && (
-              <PortfolioGrid media={media} theme={theme} />
-            )}
-            {safeTab === "links" && (
-              <LinksSection links={enabledLinks} theme={theme} onTrack={handleLinkTrack} />
-            )}
-            {safeTab === "contact" && (
-              <ContactActions
-                profile={profile}
-                theme={theme}
-                profileUrl={profileUrl}
-                onSaveContact={handleSaveContact}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+        <div className="px-4 pt-5 pb-20">
+          <AnimatePresence mode="wait" custom={dirRef.current}>
+            <motion.div
+              key={safeTab}
+              custom={dirRef.current}
+              variants={tabVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            >
+              {safeTab === "about" && (
+                <AboutSection profile={profile} theme={theme} />
+              )}
+              {safeTab === "socials" && (
+                <SocialGrid uid={profile.uid} socials={allSocials} theme={theme} />
+              )}
+              {safeTab === "portfolio" && (
+                <PortfolioGrid media={media} theme={theme} />
+              )}
+              {safeTab === "links" && (
+                <LinksSection links={enabledLinks} theme={theme} onTrack={handleLinkTrack} />
+              )}
+              {safeTab === "contact" && (
+                <ContactActions
+                  profile={profile}
+                  theme={theme}
+                  profileUrl={profileUrl}
+                  onSaveContact={handleSaveContact}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <p
+          className="text-center pb-8"
+          style={{ fontSize: 10.5, color: `${theme.subtext}22` }}
+        >
+          Powered by <span style={{ color: theme.accent, opacity: 0.4 }}>TikTag</span>
+        </p>
       </div>
-
-      {/* Watermark */}
-      <p
-        className="text-center mt-12 pb-4"
-        style={{ fontSize: 10.5, color: `${theme.subtext}22` }}
-      >
-        Powered by <span style={{ color: theme.accent, opacity: 0.4 }}>TikTag</span>
-      </p>
     </div>
   );
 }
