@@ -159,7 +159,7 @@ export default function ThemePage() {
         })}
       </div>
 
-      {/* Live preview */}
+      {/* Live preview — phone frame */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
@@ -167,57 +167,105 @@ export default function ThemePage() {
         className="rounded-[20px] p-6 mb-6"
         style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}
       >
-        <p className="text-[11px] text-white/38 uppercase tracking-widest font-medium mb-5">Live Preview</p>
-        <div className="max-w-[240px] mx-auto">
+        <p className="text-[11px] text-white/38 uppercase tracking-widest font-medium mb-6">Live Preview</p>
+        <div className="flex items-center justify-center">
+          {/* Phone shell */}
           <div
-            className="rounded-[22px] overflow-hidden transition-all duration-500"
-            style={{ background: currentTheme.background, border: `1px solid ${currentTheme.border}` }}
+            className="relative rounded-[32px] overflow-hidden transition-all duration-700"
+            style={{
+              width: 220,
+              background: currentTheme.background,
+              border: `6px solid rgba(255,255,255,0.06)`,
+              boxShadow: `0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.05)`,
+            }}
           >
-            {/* Mini hero */}
-            <div className="h-16 relative overflow-hidden" style={{ background: currentTheme.surface }}>
+            {/* Cover */}
+            <div className="relative h-[72px] overflow-hidden" style={{ background: currentTheme.surface }}>
               <div
+                className="absolute inset-0 transition-all duration-700"
+                style={{ background: `linear-gradient(180deg, ${currentTheme.accent}28 0%, ${currentTheme.surface} 70%)` }}
+              />
+              <motion.div
                 className="absolute inset-0"
-                style={{
-                  background: `radial-gradient(ellipse 80% 100% at 50% -10%, ${currentTheme.accent}45 0%, transparent 70%)`,
-                }}
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                style={{ background: `radial-gradient(ellipse 90% 100% at 50% -10%, ${currentTheme.accent}40 0%, transparent 75%)` }}
               />
-              <div
-                className="absolute top-0 left-0 right-0 h-px"
-                style={{
-                  background: `linear-gradient(90deg, transparent, ${currentTheme.accent}60 50%, transparent)`,
-                }}
-              />
+              <div className="absolute top-0 inset-x-0 h-px"
+                style={{ background: `linear-gradient(90deg, transparent, ${currentTheme.accent}70 50%, transparent)` }} />
             </div>
-            {/* Content */}
-            <div className="flex flex-col items-center px-5 -mt-6 pb-5">
+
+            {/* Avatar */}
+            <div className="flex flex-col items-center px-4 pb-4">
+              <div className="relative flex items-center justify-center" style={{ marginTop: -22 }}>
+                <motion.div
+                  className="absolute rounded-full"
+                  animate={{ opacity: [0.4, 0.9, 0.4], scale: [0.9, 1.3, 0.9] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ inset: -8, background: `radial-gradient(circle, ${currentTheme.accent}35 0%, transparent 70%)`, borderRadius: "50%" }}
+                />
+                <div
+                  className="w-[44px] h-[44px] rounded-full transition-all duration-700 relative z-10"
+                  style={{
+                    background: `${currentTheme.accent}22`,
+                    border: `2.5px solid ${currentTheme.background}`,
+                    boxShadow: `0 0 0 1.5px ${currentTheme.accent}55, 0 8px 24px rgba(0,0,0,0.5)`,
+                  }}
+                />
+              </div>
+
+              {/* Name + title */}
+              <div className="w-[68px] h-[8px] rounded mt-2.5 transition-all duration-700" style={{ background: currentTheme.text, opacity: 0.75 }} />
+              <div className="w-[48px] h-[6px] rounded mt-1.5 transition-all duration-700" style={{ background: currentTheme.accent, opacity: 0.65 }} />
+
+              {/* Tab bar pill */}
               <div
-                className="w-12 h-12 rounded-full mb-3"
-                style={{
-                  background: `${currentTheme.accent}22`,
-                  border: `2.5px solid ${currentTheme.background}`,
-                  boxShadow: `0 0 0 1.5px ${currentTheme.accent}55`,
-                }}
-              />
-              <div className="w-20 h-2.5 rounded mb-1.5 transition-all duration-500" style={{ background: currentTheme.text, opacity: 0.75 }} />
-              <div className="w-14 h-1.5 rounded mb-5 transition-all duration-500" style={{ background: currentTheme.accent, opacity: 0.6 }} />
-              <div
-                className="w-full h-9 rounded-[12px] mb-2.5 transition-all duration-500"
-                style={{ background: currentTheme.accent, opacity: 0.88 }}
-              />
-              <div className="grid grid-cols-3 gap-1.5 w-full">
-                {[0, 1, 2].map((i) => (
+                className="w-full flex gap-0.5 p-0.5 rounded-[10px] mt-4 mb-3 transition-all duration-700"
+                style={{ background: currentTheme.surface, border: `1px solid ${currentTheme.border}` }}
+              >
+                {["About", "Links", "Contact"].map((label, i) => (
                   <div
-                    key={i}
-                    className="h-11 rounded-xl transition-all duration-500"
+                    key={label}
+                    className="flex-1 py-1 rounded-[8px] flex items-center justify-center transition-all duration-700"
                     style={{
-                      background: currentTheme.buttonBg,
-                      border: `1px solid ${currentTheme.border}`,
+                      background: i === 0 ? `${currentTheme.accent}28` : "transparent",
+                      boxShadow: i === 0 ? `0 1px 8px ${currentTheme.accent}20` : "none",
                     }}
-                  />
+                  >
+                    <span style={{ fontSize: 6, fontWeight: 600, color: i === 0 ? currentTheme.accent : `${currentTheme.subtext}55` }}>
+                      {label}
+                    </span>
+                  </div>
                 ))}
               </div>
+
+              {/* CTA button */}
+              <div
+                className="w-full h-[28px] rounded-[8px] mb-2 transition-all duration-700"
+                style={{ background: `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.accent}cc)`, boxShadow: `0 4px 16px ${currentTheme.accent}35` }}
+              />
+
+              {/* Link rows */}
+              {[0, 1].map((i) => (
+                <div
+                  key={i}
+                  className="w-full h-[22px] rounded-[7px] mb-1.5 transition-all duration-700"
+                  style={{ background: currentTheme.buttonBg, border: `1px solid ${currentTheme.border}`, opacity: 1 - i * 0.25 }}
+                />
+              ))}
+            </div>
+
+            {/* Watermark */}
+            <div className="text-center pb-3" style={{ fontSize: 6, color: `${currentTheme.subtext}30` }}>
+              TikTag
             </div>
           </div>
+        </div>
+
+        {/* Theme name + tagline */}
+        <div className="text-center mt-5">
+          <p className="text-white/75 text-[13.5px] font-semibold transition-all duration-500">{currentTheme.name}</p>
+          <p className="text-white/30 text-[11px] mt-0.5 transition-all duration-500">{currentTheme.tagline}</p>
         </div>
       </motion.div>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { auth } from "@/lib/firebase";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Copy, CheckCircle2, ExternalLink, Download, Image as ImageIcon, QrCode, Zap } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 import PageSkeleton from "@/components/ui/PageSkeleton";
@@ -37,12 +37,15 @@ export default function QRPage() {
   const [copied, setCopied] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [fgColor,     setFgColor]     = useState("#6366f1");
-  const [bgColor,     setBgColor]     = useState("#ffffff");
-  const [sizeIdx,     setSizeIdx]     = useState(1);
-  const [margin,      setMargin]      = useState(2);
-  const [centerLogo,  setCenterLogo]  = useState(false);
-  const [activeTheme, setActiveTheme] = useState<string | null>("TikTag");
+  const [fgColor,          setFgColor]          = useState("#6366f1");
+  const [bgColor,          setBgColor]          = useState("#ffffff");
+  const [sizeIdx,          setSizeIdx]          = useState(1);
+  const [margin,           setMargin]           = useState(2);
+  const [activeTheme,      setActiveTheme]      = useState<string | null>("TikTag");
+
+  type CenterElement = "none" | "photo" | "company" | "custom";
+  const [centerElement,    setCenterElement]    = useState<CenterElement>("none");
+  const [customCenterUrl,  setCustomCenterUrl]  = useState("");
 
   const profileUrl = profile?.username ? `${BASE_URL}/u/${profile.username}` : "";
   const qrSize = SIZES[sizeIdx].px;
@@ -55,31 +58,37 @@ export default function QRPage() {
       margin,
       color: { dark: fgColor, light: bgColor },
     });
-    if (centerLogo && profile?.photoURL) {
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      const logoSize = Math.round(qrSize * 0.22);
-      const logoX = (canvas.width - logoSize) / 2;
-      const logoY = (canvas.height - logoSize) / 2;
-      const img = new window.Image();
-      img.crossOrigin = "anonymous";
-      img.src = profile.photoURL;
-      img.onload = () => {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 3, 0, Math.PI * 2);
-        ctx.fillStyle = bgColor;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(img, logoX, logoY, logoSize, logoSize);
-        ctx.restore();
-      };
-    }
+
+    let centerSrc = "";
+    if      (centerElement === "photo"   && profile?.photoURL)       centerSrc = profile.photoURL;
+    else if (centerElement === "company" && profile?.companyLogoUrl) centerSrc = profile.companyLogoUrl;
+    else if (centerElement === "custom"  && customCenterUrl)         centerSrc = customCenterUrl;
+    if (!centerSrc) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const logoSize = Math.round(qrSize * 0.22);
+    const logoX = (canvas.width - logoSize) / 2;
+    const logoY = (canvas.height - logoSize) / 2;
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.src = centerSrc;
+    img.onload = () => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 4, 0, Math.PI * 2);
+      ctx.fillStyle = bgColor;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, logoX, logoY, logoSize, logoSize);
+      ctx.restore();
+    };
   };
 
-  useEffect(() => { renderQR(); }, [profileUrl, fgColor, bgColor, qrSize, margin, centerLogo]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { renderQR(); }, [profileUrl, fgColor, bgColor, qrSize, margin, centerElement, customCenterUrl]);
 
   const applyTheme = (theme: typeof THEMES[number]) => {
     setFgColor(theme.fg);
@@ -377,32 +386,78 @@ export default function QRPage() {
             </div>
           </div>
 
-          {/* Options */}
-          {profile?.photoURL && (
-            <div className="rounded-[20px] p-5"
-              style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] mb-4"
-                style={{ color: "rgba(255,255,255,0.25)" }}>
-                Options
-              </p>
-              <label className="flex items-center justify-between cursor-pointer">
-                <div>
-                  <p className="text-white/72 text-[13px] font-medium">Center Logo</p>
-                  <p className="text-white/28 text-[11.5px] mt-0.5">Embed your profile photo</p>
-                </div>
-                <div
-                  onClick={() => setCenterLogo((v) => !v)}
-                  className="w-11 h-6 rounded-full transition-all relative shrink-0 cursor-pointer"
-                  style={{ background: centerLogo ? "#6366f1" : "rgba(255,255,255,0.1)" }}
-                >
-                  <span
-                    className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm"
-                    style={{ left: centerLogo ? "23px" : "4px" }}
-                  />
-                </div>
-              </label>
+          {/* Center Element */}
+          <div className="rounded-[20px] p-5"
+            style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] mb-4"
+              style={{ color: "rgba(255,255,255,0.25)" }}>
+              Center Element
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { id: "none",    label: "None",          sub: "Clean QR code",    avail: true },
+                { id: "photo",   label: "Profile Photo", sub: profile?.photoURL        ? "Your avatar"  : "No photo set",  avail: !!profile?.photoURL },
+                { id: "company", label: "Company Logo",  sub: profile?.companyLogoUrl  ? "Your logo"    : "No logo set",   avail: !!profile?.companyLogoUrl },
+                { id: "custom",  label: "Custom Image",  sub: "Paste image URL",  avail: true },
+              ] as const).map(({ id, label, sub, avail }) => {
+                const active = centerElement === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => avail && setCenterElement(id as CenterElement)}
+                    className="flex items-start gap-2.5 rounded-[13px] text-left transition-all"
+                    style={{
+                      padding: "11px 13px",
+                      background: active ? "rgba(99,102,241,0.14)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${active ? "rgba(99,102,241,0.35)" : "rgba(255,255,255,0.07)"}`,
+                      boxShadow: active ? "0 0 0 1px rgba(99,102,241,0.18)" : "none",
+                      opacity: avail ? 1 : 0.38,
+                      cursor: avail ? "pointer" : "default",
+                    }}
+                  >
+                    <div
+                      className="w-3.5 h-3.5 rounded-full shrink-0 mt-0.5 transition-all"
+                      style={{
+                        border: `2px solid ${active ? "#6366f1" : "rgba(255,255,255,0.22)"}`,
+                        background: active ? "#6366f1" : "transparent",
+                        boxShadow: active ? "0 0 0 2px rgba(99,102,241,0.2)" : "none",
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12.5px] font-semibold leading-tight" style={{ color: active ? "#a5b4fc" : "rgba(255,255,255,0.65)" }}>
+                        {label}
+                      </p>
+                      <p className="text-[10.5px] mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.28)" }}>
+                        {sub}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-          )}
+
+            {/* Custom URL input */}
+            <AnimatePresence>
+              {centerElement === "custom" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <input
+                    type="url"
+                    value={customCenterUrl}
+                    onChange={(e) => setCustomCenterUrl(e.target.value)}
+                    placeholder="https://example.com/logo.png"
+                    className="w-full mt-3 px-3.5 py-2.5 rounded-[11px] text-white/70 text-[12.5px] placeholder:text-white/22 focus:outline-none"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       </div>
     </div>
