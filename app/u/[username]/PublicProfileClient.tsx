@@ -75,7 +75,7 @@ function ProfileQR({ url, username }: { url: string; username: string }) {
     if (!ref.current || !url) return;
     import("qrcode").then((mod) => {
       (mod.default as typeof import("qrcode")).toCanvas(ref.current!, url, {
-        width: 216,
+        width: 224,
         margin: 2,
         color: { dark: "#0a0a0a", light: "#ffffff" },
       });
@@ -109,10 +109,10 @@ function ProfileQR({ url, username }: { url: string; username: string }) {
 function ProfileSkeleton() {
   return (
     <div className="min-h-screen bg-black">
-      <div className="w-full h-[280px] animate-pulse" style={{ background: "rgba(255,255,255,0.04)" }} />
-      <div className="max-w-[460px] mx-auto px-5">
-        <div className="-mt-[68px] flex justify-center mb-5 relative z-10">
-          <div className="w-[136px] h-[136px] rounded-full animate-pulse"
+      <div className="w-full h-[320px] animate-pulse" style={{ background: "rgba(255,255,255,0.04)" }} />
+      <div className="max-w-[560px] mx-auto px-6 md:px-10">
+        <div className="-mt-[76px] flex justify-center mb-8 relative z-10">
+          <div className="w-[152px] h-[152px] rounded-full animate-pulse"
             style={{ background: "rgba(255,255,255,0.08)", border: "4px solid #000" }} />
         </div>
         <div className="flex flex-col items-center gap-3 mb-9">
@@ -122,10 +122,10 @@ function ProfileSkeleton() {
           <div className="h-4 w-48 rounded-lg animate-pulse" style={{ background: "rgba(255,255,255,0.03)" }} />
         </div>
         <div className="space-y-3">
-          <div className="h-[58px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className="h-[62px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+          <div className="grid grid-cols-3 gap-3">
             {[0,1,2].map((i) => (
-              <div key={i} className="h-[76px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.04)", opacity: 1 - i * 0.15 }} />
+              <div key={i} className="h-[82px] rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.04)", opacity: 1 - i * 0.15 }} />
             ))}
           </div>
         </div>
@@ -153,7 +153,7 @@ function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 
 function Rule({ color }: { color: string }) {
   return (
-    <div className="flex items-center gap-3 my-7">
+    <div className="flex items-center gap-3 my-10">
       <div className="flex-1 h-px" style={{ background: color }} />
       <div className="w-1 h-1 rounded-full" style={{ background: color, opacity: 1.5 }} />
       <div className="flex-1 h-px" style={{ background: color }} />
@@ -285,7 +285,7 @@ export default function PublicProfileClient({
       {/* ══════════════════════════════════════════════════════
           HERO
       ══════════════════════════════════════════════════════ */}
-      <div className="relative w-full overflow-hidden" style={{ height: "280px" }}>
+      <div className="relative w-full overflow-hidden" style={{ height: "320px" }}>
         {hasCover ? (
           <>
             <Image src={profile.coverPhotoUrl!} alt="Cover" fill className="object-cover" priority unoptimized />
@@ -324,7 +324,7 @@ export default function PublicProfileClient({
             {profile.displayName && (
               <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none overflow-hidden">
                 <span className="font-black uppercase leading-none"
-                  style={{ fontSize: "clamp(140px, 45vw, 220px)", color: `${theme.accent}07`, letterSpacing: "-0.06em" }}>
+                  style={{ fontSize: "clamp(160px, 50vw, 260px)", color: `${theme.accent}07`, letterSpacing: "-0.06em" }}>
                   {profile.displayName[0]}
                 </span>
               </div>
@@ -336,11 +336,11 @@ export default function PublicProfileClient({
       {/* ══════════════════════════════════════════════════════
           CONTENT CONTAINER
       ══════════════════════════════════════════════════════ */}
-      <div className="max-w-[460px] mx-auto px-5 pb-24">
+      <div className="max-w-[560px] mx-auto px-6 md:px-10 pb-32">
 
         {/* ── Avatar ────────────────────────────────────── */}
         <motion.div
-          className="flex justify-center -mt-[68px] mb-5 relative z-10"
+          className="flex justify-center -mt-[76px] mb-8 relative z-10"
           initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.55, ease: [0.34, 1.56, 0.64, 1] }}
@@ -348,7 +348,7 @@ export default function PublicProfileClient({
           <div
             className="relative overflow-hidden flex items-center justify-center"
             style={{
-              width: 136, height: 136, borderRadius: "50%",
+              width: 152, height: 152, borderRadius: "50%",
               border: `4px solid ${theme.background}`,
               boxShadow: `0 0 0 1.5px ${theme.accent}55,
                           0 16px 56px rgba(0,0,0,0.65),
@@ -359,7 +359,7 @@ export default function PublicProfileClient({
             {profile.photoURL ? (
               <Image src={profile.photoURL} alt={profile.displayName || "Profile"} fill className="object-cover" unoptimized />
             ) : (
-              <span className="font-bold select-none" style={{ fontSize: 48, color: theme.accent }}>
+              <span className="font-bold select-none" style={{ fontSize: 54, color: theme.accent }}>
                 {profile.displayName?.[0]?.toUpperCase() || "?"}
               </span>
             )}
@@ -375,19 +375,19 @@ export default function PublicProfileClient({
         >
           <h1
             className="font-bold tracking-tight leading-[1.1]"
-            style={{ fontSize: "clamp(27px, 6.8vw, 35px)", color: theme.text, letterSpacing: "-0.025em" }}
+            style={{ fontSize: "clamp(30px, 7.5vw, 38px)", color: theme.text, letterSpacing: "-0.025em" }}
           >
             {profile.displayName || "—"}
           </h1>
 
           {profile.title && (
-            <p className="mt-2 font-medium" style={{ fontSize: "15px", color: theme.subtext }}>
+            <p className="mt-3 font-medium" style={{ fontSize: "16px", color: theme.subtext }}>
               {profile.title}
             </p>
           )}
 
           {profile.location && (
-            <div className="flex justify-center mt-3">
+            <div className="flex justify-center mt-4">
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5"
                 style={{
@@ -404,7 +404,7 @@ export default function PublicProfileClient({
           )}
 
           {profile.bio && (
-            <div className="mt-5 mb-1">
+            <div className="mt-6 mb-1">
               <p
                 className="max-w-sm mx-auto"
                 style={{ fontSize: "15px", lineHeight: "1.85", color: theme.subtext }}
@@ -429,7 +429,7 @@ export default function PublicProfileClient({
 
         {/* ── Action Zone ───────────────────────────────── */}
         <motion.div
-          className="mt-8 space-y-2.5"
+          className="mt-10 space-y-3"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
@@ -440,8 +440,8 @@ export default function PublicProfileClient({
             onClick={handleSaveContact}
             className="w-full flex items-center justify-center gap-3 rounded-[18px] font-semibold text-white"
             style={{
-              padding: "18px 24px",
-              fontSize: "16px",
+              padding: "20px 28px",
+              fontSize: "17px",
               letterSpacing: "-0.015em",
               background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accent}cc 100%)`,
               boxShadow: `0 8px 32px ${theme.accent}40, 0 1px 0 rgba(255,255,255,0.14) inset, 0 -1px 0 rgba(0,0,0,0.1) inset`,
@@ -453,7 +453,7 @@ export default function PublicProfileClient({
 
           {/* Contact tiles */}
           {contactTiles.length > 0 && (
-            <div className={`grid gap-2.5 ${tilesCols(contactTiles.length)}`}>
+            <div className={`grid gap-3 ${tilesCols(contactTiles.length)}`}>
               {contactTiles.map(({ label, href, icon }) => (
                 <motion.button
                   key={label}
@@ -461,11 +461,11 @@ export default function PublicProfileClient({
                   onClick={() => handleAction(label, href)}
                   className="flex flex-col items-center gap-[9px] rounded-[16px] font-medium transition-opacity hover:opacity-80"
                   style={{
-                    padding: "15px 12px",
+                    padding: "18px 14px",
                     background: theme.buttonBg,
                     border: `1px solid ${theme.border}`,
                     color: theme.text,
-                    fontSize: "12px",
+                    fontSize: "13px",
                     letterSpacing: "0.01em",
                   }}
                 >
@@ -478,7 +478,7 @@ export default function PublicProfileClient({
 
           {/* Secondary tiles */}
           {secondaryTiles.length > 0 && (
-            <div className={`grid gap-2.5 ${tilesCols(secondaryTiles.length)}`}>
+            <div className={`grid gap-3 ${tilesCols(secondaryTiles.length)}`}>
               {secondaryTiles.map(({ label, href, icon }) => (
                 <motion.button
                   key={label}
@@ -486,7 +486,7 @@ export default function PublicProfileClient({
                   onClick={() => handleAction(label, href)}
                   className="flex items-center justify-center gap-2.5 rounded-[16px] font-medium transition-opacity hover:opacity-80"
                   style={{
-                    padding: "14px 20px",
+                    padding: "16px 24px",
                     background: theme.buttonBg,
                     border: `1px solid ${theme.border}`,
                     color: theme.text,
@@ -525,20 +525,20 @@ export default function PublicProfileClient({
                   background: `linear-gradient(90deg, transparent, ${theme.accent}50, transparent)`,
                 }} />
 
-                <div className="p-5">
+                <div className="p-7">
                   <div className="flex items-start gap-4">
                     {/* Logo */}
                     <div
                       className="flex-shrink-0 rounded-[16px] overflow-hidden flex items-center justify-center"
                       style={{
-                        width: 58, height: 58,
+                        width: 68, height: 68,
                         background: theme.buttonBg,
                         border: `1px solid ${theme.border}`,
                         boxShadow: `0 2px 12px rgba(0,0,0,0.2)`,
                       }}
                     >
                       {profile.companyLogoUrl ? (
-                        <Image src={profile.companyLogoUrl} alt={profile.companyName} width={58} height={58}
+                        <Image src={profile.companyLogoUrl} alt={profile.companyName} width={68} height={68}
                           className="w-full h-full object-contain p-2" unoptimized />
                       ) : (
                         <Building2 className="w-6 h-6" style={{ color: theme.subtext }} />
@@ -614,7 +614,7 @@ export default function PublicProfileClient({
                 </p>
                 {/* Social pods grid — max 3 per row */}
                 <div
-                  className="grid gap-x-6 gap-y-5 w-full"
+                  className="grid gap-x-8 gap-y-7 w-full"
                   style={{
                     gridTemplateColumns: allSocials.length <= 2
                       ? `repeat(${allSocials.length}, auto)`
@@ -643,7 +643,7 @@ export default function PublicProfileClient({
                           whileTap={{ scale: 0.9 }}
                           className="flex items-center justify-center rounded-full"
                           style={{
-                            width: 52, height: 52,
+                            width: 60, height: 60,
                             background: `${brandColor}1c`,
                             border: `1.5px solid ${brandColor}35`,
                             color: brandColor,
@@ -651,7 +651,7 @@ export default function PublicProfileClient({
                           }}
                           aria-label={label}
                         >
-                          <PlatformSvg platform={platform} size={20} />
+                          <PlatformSvg platform={platform} size={22} />
                         </motion.a>
                         <span className="font-medium" style={{ fontSize: "10.5px", color: `${theme.subtext}80`, letterSpacing: "0.01em" }}>
                           {label}
@@ -679,13 +679,13 @@ export default function PublicProfileClient({
                     onClick={() => handleAction(link.label, getLinkHref(link))}
                     className="w-full flex items-center gap-4 rounded-[16px] text-left group transition-all hover:opacity-85"
                     style={{
-                      padding: "16px 20px",
+                      padding: "18px 24px",
                       background: theme.buttonBg,
                       border: `1px solid ${theme.border}`,
                     }}
                   >
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: `${theme.accent}14`, border: `1px solid ${theme.accent}22` }}
                     >
                       {link.type === "call"     ? <Phone className="w-4 h-4" style={{ color: theme.accent }} />
@@ -720,7 +720,7 @@ export default function PublicProfileClient({
                 onClick={handleShare}
                 className="flex items-center justify-center gap-2.5 transition-opacity hover:opacity-75"
                 style={{
-                  padding: "16px",
+                  padding: "19px",
                   color: theme.subtext,
                   fontSize: "13.5px",
                   fontWeight: 500,
@@ -736,7 +736,7 @@ export default function PublicProfileClient({
                 onClick={() => setShowQR((v) => !v)}
                 className="flex items-center justify-center gap-2.5 transition-all hover:opacity-80"
                 style={{
-                  padding: "16px",
+                  padding: "19px",
                   background: showQR ? `${theme.accent}14` : "transparent",
                   color: showQR ? theme.accent : theme.subtext,
                   fontSize: "13.5px",
