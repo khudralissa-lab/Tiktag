@@ -1,5 +1,21 @@
 import type { UserProfile, AnalyticsEvent } from "@/types";
 
+// Recursively strips undefined values so Firestore never receives them.
+// Firestore rejects any field set to undefined, including inside nested objects and arrays.
+function cleanFirestoreData(data: unknown): unknown {
+  if (Array.isArray(data)) {
+    return data.map(cleanFirestoreData);
+  }
+  if (data !== null && typeof data === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+      if (v !== undefined) out[k] = cleanFirestoreData(v);
+    }
+    return out;
+  }
+  return data;
+}
+
 // All firebase/firestore imports are lazy — called only when a function is invoked
 // so the module is never evaluated during SSR/edge rendering.
 async function getFirebase() {
@@ -12,7 +28,7 @@ async function getFirebase() {
 
 export async function createUserProfile(uid: string, data: Partial<UserProfile>) {
   const { doc, setDoc, db } = await getFirebase();
-  await setDoc(doc(db, "users", uid), {
+  await setDoc(doc(db, "users", uid), cleanFirestoreData({
     ...data,
     uid,
     plan: "free",
@@ -20,7 +36,7 @@ export async function createUserProfile(uid: string, data: Partial<UserProfile>)
     links: [],
     socials: [],
     accentColor: "#6366f1",
-  });
+  }) as Record<string, unknown>);
   if (data.username) {
     await setDoc(doc(db, "usernames", data.username), { uid });
   }
@@ -42,7 +58,7 @@ export async function getProfileByUsername(username: string): Promise<UserProfil
 
 export async function updateUserProfile(uid: string, data: Partial<UserProfile>) {
   const { doc, updateDoc, db } = await getFirebase();
-  await updateDoc(doc(db, "users", uid), data as Record<string, unknown>);
+  await updateDoc(doc(db, "users", uid), cleanFirestoreData(data) as Record<string, unknown>);
 }
 
 export async function isUsernameAvailable(username: string): Promise<boolean> {

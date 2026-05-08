@@ -6,6 +6,7 @@ export interface MediaItem {
   caption?: string;
   featured?: boolean;
   order?: number;
+  createdAt?: number;
 }
 
 export interface UserProfile {

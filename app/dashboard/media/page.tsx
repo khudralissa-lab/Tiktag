@@ -6,7 +6,7 @@ import { auth } from "@/lib/firebase";
 import { uploadMediaItem } from "@/lib/storage";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Upload, Trash2, Star, Play, X, Images, Loader2, AlertCircle,
+  Upload, Trash2, Star, Play, Images, Loader2, AlertCircle, RotateCcw,
 } from "lucide-react";
 import NextImage from "next/image";
 import BlockedBanner from "@/components/ui/BlockedBanner";
@@ -29,6 +29,7 @@ export default function MediaPage() {
   const [uploadError, setUploadError] = useState("");
   const [dragging, setDragging] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
+  const lastFilesRef = useRef<File[] | null>(null);
 
   const media: MediaItem[] = profile?.media ?? [];
 
@@ -44,37 +45,48 @@ export default function MediaPage() {
 
     const toUpload = arr.slice(0, remaining);
     setUploadError("");
+    lastFilesRef.current = toUpload;
     setUploading(true);
 
-    const newItems: MediaItem[] = [];
-    for (let i = 0; i < toUpload.length; i++) {
-      const file = toUpload[i];
-      const isVideo = file.type.startsWith("video/");
-      const isImage = file.type.startsWith("image/");
-      if (!isImage && !isVideo) continue;
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        setUploadError(`"${file.name}" exceeds ${MAX_SIZE_MB} MB.`);
-        continue;
-      }
-      try {
+    try {
+      const newItems: MediaItem[] = [];
+
+      for (let i = 0; i < toUpload.length; i++) {
+        const file = toUpload[i];
+        const isVideo = file.type.startsWith("video/");
+        const isImage = file.type.startsWith("image/");
+        if (!isImage && !isVideo) continue;
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+          setUploadError(`"${file.name}" exceeds ${MAX_SIZE_MB} MB.`);
+          continue;
+        }
+
         const { url, thumbnailUrl } = await uploadMediaItem(user.uid, file, media.length + i);
-        newItems.push({
+
+        // Build item with no undefined fields — only include optional fields when they have a value
+        const item: MediaItem = {
           id: generateId(),
           type: isVideo ? "video" : "image",
           url,
-          thumbnailUrl,
+          caption: "",
           featured: false,
           order: media.length + i,
-        });
-      } catch (err) {
-        setUploadError(err instanceof Error ? err.message : "Upload failed.");
-      }
-    }
+          createdAt: Date.now(),
+        };
+        if (thumbnailUrl) item.thumbnailUrl = thumbnailUrl;
 
-    if (newItems.length > 0) {
-      await update({ media: [...media, ...newItems], updatedAt: Date.now() });
+        newItems.push(item);
+      }
+
+      if (newItems.length > 0) {
+        await update({ media: [...media, ...newItems], updatedAt: Date.now() });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Upload failed. Please try again.";
+      setUploadError(msg);
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,30 +94,44 @@ export default function MediaPage() {
     e.target.value = "";
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    if (e.dataTransfer.files) doUpload(e.dataTransfer.files);
-  }, [media, user]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      if (e.dataTransfer.files) doUpload(e.dataTransfer.files);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [media, user]
+  );
+
+  const handleRetry = () => {
+    if (lastFilesRef.current?.length) doUpload(lastFilesRef.current);
+  };
 
   const handleDelete = async (id: string) => {
     setSaving(id);
-    await update({ media: media.filter((m) => m.id !== id), updatedAt: Date.now() });
-    setSaving(null);
+    try {
+      await update({ media: media.filter((m) => m.id !== id), updatedAt: Date.now() });
+    } finally {
+      setSaving(null);
+    }
   };
 
   const handleToggleFeatured = async (id: string) => {
     setSaving(id);
-    await update({
-      media: media.map((m) => m.id === id ? { ...m, featured: !m.featured } : m),
-      updatedAt: Date.now(),
-    });
-    setSaving(null);
+    try {
+      await update({
+        media: media.map((m) => (m.id === id ? { ...m, featured: !m.featured } : m)),
+        updatedAt: Date.now(),
+      });
+    } finally {
+      setSaving(null);
+    }
   };
 
   const handleCaption = async (id: string, caption: string) => {
     await update({
-      media: media.map((m) => m.id === id ? { ...m, caption } : m),
+      media: media.map((m) => (m.id === id ? { ...m, caption } : m)),
       updatedAt: Date.now(),
     });
   };
@@ -181,6 +207,7 @@ export default function MediaPage() {
               </>
             )}
           </div>
+
           <input
             ref={inputRef}
             type="file"
@@ -189,12 +216,37 @@ export default function MediaPage() {
             className="hidden"
             onChange={handleFiles}
           />
-          {uploadError && (
-            <div className="flex items-center gap-2 mt-2.5 text-red-400/80 text-xs">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              {uploadError}
-            </div>
-          )}
+
+          {/* Error banner */}
+          <AnimatePresence>
+            {uploadError && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-2.5 mt-3 px-4 py-3 rounded-[14px]"
+                style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.18)" }}
+              >
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span className="text-red-400/90 text-sm flex-1">{uploadError}</span>
+                <button
+                  onClick={handleRetry}
+                  disabled={uploading}
+                  className="flex items-center gap-1 text-indigo-400 text-xs font-medium hover:text-indigo-300 transition-colors disabled:opacity-40 shrink-0"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Retry
+                </button>
+                <button
+                  onClick={() => setUploadError("")}
+                  className="text-white/25 hover:text-white/50 text-xs transition-colors shrink-0 ml-1"
+                >
+                  Dismiss
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
 
@@ -240,14 +292,18 @@ export default function MediaPage() {
                           unoptimized
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center"
-                          style={{ background: "rgba(255,255,255,0.03)" }}>
+                        <div
+                          className="absolute inset-0 flex items-center justify-center"
+                          style={{ background: "rgba(255,255,255,0.03)" }}
+                        >
                           <Play className="w-8 h-8 text-white/20" />
                         </div>
                       )}
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                          style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.18)" }}>
+                        <div
+                          className="w-9 h-9 rounded-full flex items-center justify-center"
+                          style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.18)" }}
+                        >
                           <Play className="w-4 h-4 text-white ml-0.5" />
                         </div>
                       </div>
@@ -262,7 +318,7 @@ export default function MediaPage() {
                     />
                   )}
 
-                  {/* Action buttons overlay */}
+                  {/* Action buttons */}
                   <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
                     <button
                       onClick={() => handleDelete(item.id)}
@@ -293,7 +349,7 @@ export default function MediaPage() {
                     </button>
                   </div>
 
-                  {/* Type badge */}
+                  {/* Badges */}
                   <div className="absolute bottom-2 left-2">
                     <span
                       className="text-[9.5px] font-bold uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-[5px]"
