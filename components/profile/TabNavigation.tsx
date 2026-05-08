@@ -17,27 +17,27 @@ interface TabNavigationProps {
 
 export default function TabNavigation({ tabs, activeTab, onChange, theme }: TabNavigationProps) {
   const isLight = theme.category === "light";
-  const pillBg = isLight ? `${theme.accent}16` : `${theme.accent}22`;
+  const pillBg = isLight
+    ? `linear-gradient(135deg, ${theme.accent}22, ${theme.accent}14)`
+    : `linear-gradient(135deg, ${theme.accent}32, ${theme.accent}1c)`;
   const activeColor = theme.accent;
-  const inactiveColor = isLight ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.32)";
-  const barBg = isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.04)";
-  const barBorder = isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)";
+  const inactiveColor = isLight ? "rgba(0,0,0,0.32)" : "rgba(255,255,255,0.30)";
 
   return (
     <div
       className="sticky top-0 z-40 px-4 py-2.5"
       style={{
-        background: `${theme.background}ee`,
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        borderBottom: `1px solid ${barBorder}`,
+        background: `${theme.background}d0`,
+        backdropFilter: "blur(32px)",
+        WebkitBackdropFilter: "blur(32px)",
+        borderBottom: `1px solid ${theme.accent}14`,
       }}
     >
       <div
         className="flex gap-0.5 p-1 rounded-[18px] overflow-x-auto"
         style={{
-          background: barBg,
-          border: `1px solid ${barBorder}`,
+          background: isLight ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.04)",
+          border: `1px solid ${theme.accent}18`,
           scrollbarWidth: "none",
         }}
       >
@@ -56,9 +56,9 @@ export default function TabNavigation({ tabs, activeTab, onChange, theme }: TabN
                   className="absolute inset-0 rounded-[14px]"
                   style={{
                     background: pillBg,
-                    boxShadow: `0 2px 12px ${theme.accent}18`,
+                    boxShadow: `0 2px 20px ${theme.accent}30, 0 1px 0 rgba(255,255,255,0.10) inset`,
                   }}
-                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                  transition={{ type: "spring", stiffness: 440, damping: 34 }}
                 />
               )}
               <span className="relative z-10">{tab.label}</span>

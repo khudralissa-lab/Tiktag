@@ -54,7 +54,11 @@ export default function SocialGrid({ uid, socials, theme }: SocialGridProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackButtonClick(uid, platform)}
-              whileHover={{ scale: 1.18, y: -6 }}
+              whileHover={{
+                scale: 1.20,
+                y: -8,
+                boxShadow: `0 12px 48px ${brandColor}55, 0 4px 16px ${brandColor}30`,
+              }}
               whileTap={{ scale: 0.88 }}
               className="flex items-center justify-center rounded-full"
               style={{
@@ -62,7 +66,7 @@ export default function SocialGrid({ uid, socials, theme }: SocialGridProps) {
                 background: `${brandColor}18`,
                 border: `1.5px solid ${brandColor}38`,
                 color: brandColor,
-                boxShadow: `0 6px 28px ${brandColor}35, 0 2px 8px ${brandColor}18`,
+                boxShadow: `0 6px 28px ${brandColor}30, 0 2px 8px ${brandColor}15`,
               }}
               aria-label={label}
             >

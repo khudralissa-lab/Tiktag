@@ -38,10 +38,14 @@ export default function LinksSection({ links, theme, onTrack }: LinksSectionProp
         return (
           <motion.button
             key={link.id}
-            whileTap={{ scale: 0.983 }}
-            whileHover={{ x: 3, scale: 1.002 }}
+            whileTap={{ scale: 0.98 }}
+            whileHover={{
+              x: 5,
+              scale: 1.006,
+              boxShadow: `inset 3px 0 0 ${theme.accent}55, 0 8px 36px ${theme.accent}18, 0 2px 14px rgba(0,0,0,0.14)`,
+            }}
             onClick={() => onTrack(link.label, href)}
-            className="w-full flex items-center gap-4 rounded-[18px] text-left group"
+            className="w-full flex items-center gap-4 rounded-[18px] text-left"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...spr, delay: i * 0.05 }}
@@ -49,18 +53,20 @@ export default function LinksSection({ links, theme, onTrack }: LinksSectionProp
               padding: "16px 18px",
               background: theme.buttonBg,
               border: `1px solid ${theme.border}`,
-              boxShadow: "0 2px 14px rgba(0,0,0,0.10)",
+              boxShadow: `inset 3px 0 0 rgba(0,0,0,0), 0 2px 14px rgba(0,0,0,0.10), 0 0 0 rgba(0,0,0,0)`,
             }}
           >
-            <div
+            <motion.div
+              whileHover={{ scale: 1.12 }}
+              transition={{ type: "spring", stiffness: 400, damping: 22 }}
               className="w-10 h-10 rounded-[13px] flex items-center justify-center shrink-0"
               style={{
                 background: `${theme.accent}14`,
-                border: `1px solid ${theme.accent}22`,
+                border: `1px solid ${theme.accent}28`,
               }}
             >
               {linkIcon(link.type, theme.accent)}
-            </div>
+            </motion.div>
             <span
               className="flex-1 font-semibold"
               style={{ fontSize: 15, color: theme.text, letterSpacing: "-0.01em" }}
@@ -68,7 +74,7 @@ export default function LinksSection({ links, theme, onTrack }: LinksSectionProp
               {link.label}
             </span>
             <ChevronRight
-              className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1"
+              className="w-4 h-4 shrink-0"
               style={{ color: `${theme.subtext}35` }}
             />
           </motion.button>

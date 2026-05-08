@@ -40,15 +40,16 @@ export default function PortfolioGrid({ media, theme }: PortfolioGridProps) {
           <motion.button
             key={item.id}
             onClick={() => setModal({ index: i })}
-            whileHover={{ scale: 1.03, y: -2 }}
+            whileHover={{ scale: 1.06, y: -5 }}
             whileTap={{ scale: 0.97 }}
-            className="relative overflow-hidden rounded-[16px] aspect-square"
-            initial={{ opacity: 0, scale: 0.9 }}
+            className="relative overflow-hidden rounded-[18px] aspect-square"
+            initial={{ opacity: 0, scale: 0.88 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ ...spr, delay: i * 0.05 }}
+            transition={{ ...spr, delay: i * 0.055 }}
             style={{
               background: `${theme.accent}10`,
               border: `1px solid ${theme.border}`,
+              boxShadow: "0 4px 24px rgba(0,0,0,0.20)",
             }}
           >
             {item.type === "video" ? (
@@ -100,11 +101,16 @@ export default function PortfolioGrid({ media, theme }: PortfolioGridProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.25 }}
             className="fixed inset-0 z-[100] flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.94)", backdropFilter: "blur(20px)" }}
+            style={{ background: "rgba(0,0,0,0.93)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)" }}
             onClick={() => setModal(null)}
           >
+            {/* Cinematic center depth glow */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(255,255,255,0.025) 0%, transparent 70%)" }}
+            />
             {/* Close */}
             <button
               className="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center z-10"
@@ -138,10 +144,10 @@ export default function PortfolioGrid({ media, theme }: PortfolioGridProps) {
 
             <motion.div
               key={modal.index}
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.92 }}
-              transition={{ type: "spring", stiffness: 340, damping: 28 }}
+              initial={{ opacity: 0, scale: 0.88, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: -8 }}
+              transition={{ type: "spring", stiffness: 360, damping: 30 }}
               className="flex flex-col items-center gap-3 max-w-[90vw]"
               onClick={(e) => e.stopPropagation()}
             >

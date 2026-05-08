@@ -67,9 +67,9 @@ export function GrainOverlay({ opacity = 0.042 }: { opacity?: number }) {
 }
 
 export function AmbientOrb({
-  color, x, y, w, h, duration, delay = 0,
+  color, x, y, w, h, duration, delay = 0, blurAmount = 55,
 }: {
-  color: string; x: string; y: string; w: number; h: number; duration: number; delay?: number;
+  color: string; x: string; y: string; w: number; h: number; duration: number; delay?: number; blurAmount?: number;
 }) {
   return (
     <motion.div
@@ -77,7 +77,7 @@ export function AmbientOrb({
       style={{
         left: x, top: y, width: w, height: h,
         background: `radial-gradient(ellipse, ${color} 0%, transparent 70%)`,
-        filter: "blur(55px)",
+        filter: `blur(${blurAmount}px)`,
         borderRadius: "50%",
       }}
       animate={{ x: [0, 22, -12, 8, 0], y: [0, -16, 10, -6, 0], scale: [1, 1.07, 0.95, 1.03, 1] }}
@@ -102,9 +102,9 @@ export function getLinkHref(link: CustomLink): string {
 export const spr = { type: "spring" as const, stiffness: 260, damping: 22 };
 
 export const tabVariants = {
-  enter: (dir: number) => ({ opacity: 0, x: dir * 24 }),
-  center: { opacity: 1, x: 0 },
-  exit:  (dir: number) => ({ opacity: 0, x: -dir * 24 }),
+  enter: (dir: number) => ({ opacity: 0, x: dir * 30, y: 10, scale: 0.98 }),
+  center: { opacity: 1, x: 0, y: 0, scale: 1 },
+  exit:  (dir: number) => ({ opacity: 0, x: -dir * 30, y: -10, scale: 0.98 }),
 };
 
 // ─── Empty state ──────────────────────────────────────────────────────────────

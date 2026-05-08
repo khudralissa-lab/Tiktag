@@ -6,7 +6,7 @@ import { QrCode } from "lucide-react";
 import { getTheme } from "@/lib/themes";
 import { trackProfileView, trackButtonClick } from "@/lib/analytics";
 import { generateVCard, downloadVCard } from "@/lib/utils";
-import { tabVariants } from "@/components/profile/shared";
+import { tabVariants, AmbientOrb, GrainOverlay } from "@/components/profile/shared";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import ProfileHero from "@/components/profile/ProfileHero";
 import TabNavigation, { type Tab } from "@/components/profile/TabNavigation";
@@ -175,8 +175,34 @@ export default function PublicProfileClient({
     : visibleTabs[0]?.id ?? "about";
 
   return (
-    <div className="min-h-screen" style={{ background: theme.background }}>
-      <div className="mx-auto w-full" style={{ maxWidth: 460 }}>
+    <div className="relative min-h-screen" style={{ background: theme.background }}>
+      {/* ── Cinematic atmospheric background (fixed, full viewport) ── */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <AmbientOrb
+          color={`${theme.accent}16`}
+          x="-8%" y="-12%"
+          w={640} h={560}
+          duration={18}
+          blurAmount={100}
+        />
+        <AmbientOrb
+          color={`${theme.accent}0c`}
+          x="42%" y="48%"
+          w={560} h={480}
+          duration={22}
+          delay={6}
+          blurAmount={100}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(ellipse 110% 55% at 50% 0%, ${theme.accent}08 0%, transparent 68%)`,
+          }}
+        />
+        <GrainOverlay opacity={0.025} />
+      </div>
+
+      <div className="relative z-10 mx-auto w-full" style={{ maxWidth: 460 }}>
         <ProfileHero
           profile={profile}
           theme={theme}

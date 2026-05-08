@@ -51,52 +51,53 @@ export default function ProfileHero({
               priority
               unoptimized
             />
+            {/* Cinematic top vignette + bottom fade */}
             <div
               className="absolute inset-0"
               style={{
-                background: `linear-gradient(to bottom, rgba(0,0,0,0) 40%, ${theme.background} 100%)`,
+                background: `linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0) 28%, ${theme.background}75 66%, ${theme.background} 100%)`,
               }}
             />
             <GrainOverlay opacity={0.03} />
           </>
         ) : (
           <>
-            <div className="absolute inset-0" style={{ background: theme.surface }} />
+            {/* Cinematic layered gradient */}
             <div
               className="absolute inset-0"
-              style={{
-                backgroundImage: `radial-gradient(circle, ${theme.accent}1a 1px, transparent 1px)`,
-                backgroundSize: "28px 28px",
-                opacity: 0.5,
-              }}
+              style={{ background: `linear-gradient(180deg, ${theme.accent}22 0%, ${theme.surface} 55%, ${theme.background} 100%)` }}
             />
-            <AmbientOrb color={`${theme.accent}55`} x="5%"  y="0%"   w={320} h={220} duration={9}   />
-            <AmbientOrb color={`${theme.accent}35`} x="55%"  y="20%"  w={260} h={200} duration={11}  delay={2} />
+            <AmbientOrb color={`${theme.accent}65`} x="-5%"  y="-15%"  w={360} h={300} duration={10} blurAmount={70} />
+            <AmbientOrb color={`${theme.accent}45`} x="50%"  y="5%"    w={300} h={260} duration={13} delay={2}  blurAmount={70} />
+            {/* Breathing aurora at top */}
             <motion.div
               className="absolute inset-0"
-              animate={{ opacity: [0.15, 0.38, 0.15] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-              style={{ background: `radial-gradient(ellipse 85% 70% at 50% 0%, ${theme.accent}28 0%, transparent 65%)` }}
+              animate={{ opacity: [0.18, 0.48, 0.18] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              style={{ background: `radial-gradient(ellipse 100% 90% at 50% -10%, ${theme.accent}38 0%, transparent 72%)` }}
             />
+            {/* Accent line at very top */}
             <div
-              className="absolute top-0 left-0 right-0 h-[1.5px]"
-              style={{ background: `linear-gradient(90deg, transparent, ${theme.accent}70 50%, transparent)` }}
+              className="absolute top-0 left-0 right-0 h-px"
+              style={{ background: `linear-gradient(90deg, transparent, ${theme.accent}90 50%, transparent)` }}
             />
+            {/* Watermark letter */}
             {profile.displayName && (
               <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none overflow-hidden">
                 <span
                   className="font-black uppercase leading-none"
-                  style={{ fontSize: "clamp(120px, 45vw, 220px)", color: `${theme.accent}07`, letterSpacing: "-0.06em" }}
+                  style={{ fontSize: "clamp(130px, 50vw, 240px)", color: `${theme.accent}07`, letterSpacing: "-0.06em" }}
                 >
                   {profile.displayName[0]}
                 </span>
               </div>
             )}
+            {/* Bottom fade */}
             <div
-              className="absolute inset-x-0 bottom-0 h-20"
+              className="absolute inset-x-0 bottom-0 h-24"
               style={{ background: `linear-gradient(to bottom, transparent, ${theme.background})` }}
             />
-            <GrainOverlay opacity={0.042} />
+            <GrainOverlay opacity={0.045} />
           </>
         )}
       </div>
@@ -111,36 +112,51 @@ export default function ProfileHero({
             transition={{ ...spr, delay: 0.05 }}
           >
             <motion.div
-              animate={{ y: [0, -4, 0] }}
+              animate={{ y: [0, -5, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <div
-                className="relative flex items-center justify-center overflow-hidden"
-                style={{
-                  width: 104, height: 104, borderRadius: "50%",
-                  border: `3.5px solid ${theme.background}`,
-                  background: `${theme.accent}18`,
-                  boxShadow: [
-                    `0 0 0 1.5px ${theme.accent}55`,
-                    `0 0 0 7px ${theme.accent}12`,
-                    `0 24px 64px rgba(0,0,0,0.65)`,
-                    `0 0 100px ${theme.accent}22`,
-                  ].join(", "),
-                }}
-              >
-                {profile.photoURL ? (
-                  <Image
-                    src={profile.photoURL}
-                    alt={profile.displayName || "Profile"}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <span className="font-bold select-none" style={{ fontSize: 40, color: theme.accent }}>
-                    {profile.displayName?.[0]?.toUpperCase() || "?"}
-                  </span>
-                )}
+              <div className="relative flex items-center justify-center" style={{ width: 104, height: 104 }}>
+                {/* Pulsing ambient glow — breathes behind the avatar */}
+                <motion.div
+                  className="absolute rounded-full pointer-events-none"
+                  animate={{ opacity: [0.45, 1, 0.45], scale: [0.85, 1.28, 0.85] }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+                  style={{
+                    inset: -24,
+                    background: `radial-gradient(circle, ${theme.accent}35 0%, transparent 68%)`,
+                    borderRadius: "50%",
+                  }}
+                />
+                {/* Avatar ring */}
+                <div
+                  className="relative flex items-center justify-center overflow-hidden"
+                  style={{
+                    width: 104, height: 104, borderRadius: "50%",
+                    border: `3.5px solid ${theme.background}`,
+                    background: `${theme.accent}18`,
+                    boxShadow: [
+                      `0 0 0 1.5px ${theme.accent}60`,
+                      `0 0 0 7px ${theme.accent}14`,
+                      `0 24px 64px rgba(0,0,0,0.65)`,
+                      `0 0 120px ${theme.accent}28`,
+                    ].join(", "),
+                    zIndex: 1,
+                  }}
+                >
+                  {profile.photoURL ? (
+                    <Image
+                      src={profile.photoURL}
+                      alt={profile.displayName || "Profile"}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <span className="font-bold select-none" style={{ fontSize: 40, color: theme.accent }}>
+                      {profile.displayName?.[0]?.toUpperCase() || "?"}
+                    </span>
+                  )}
+                </div>
               </div>
             </motion.div>
           </motion.div>
