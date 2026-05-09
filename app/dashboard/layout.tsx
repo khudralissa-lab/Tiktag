@@ -5,9 +5,9 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Sidebar from "@/components/dashboard/Sidebar";
 
 const AuthGuard = dynamic(() => import("@/components/auth/AuthGuard"), { ssr: false });
-const Sidebar   = dynamic(() => import("@/components/dashboard/Sidebar"),   { ssr: false });
 
 const PAGE_LABELS: Record<string, string> = {
   "/dashboard":           "Overview",
@@ -42,74 +42,109 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <AuthGuard>
-      <div style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "#04040c",
-        backgroundImage:
-          "linear-gradient(rgba(255,255,255,0.013) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.013) 1px, transparent 1px)",
-        backgroundSize: "72px 72px",
-      }}>
-        {/* Mobile topbar */}
+      <div
+        className="flex min-h-screen"
+        style={{
+          background: "#04040c",
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+        }}
+      >
+        {/* Mobile topbar — must be first child, highest z-index */}
         <div
           className="md:hidden"
           style={{
-            position: "fixed", top: 0, left: 0, right: 0, height: 56, zIndex: 50,
-            display: "flex", alignItems: "center", justifyContent: "space-between",
+            position: "fixed",
+            top: 0, left: 0, right: 0,
+            height: 56,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
             padding: "0 16px",
-            background: "rgba(4,4,12,0.94)",
+            background: "rgba(4,4,12,0.96)",
             backdropFilter: "blur(24px)",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-            boxShadow: "0 1px 20px rgba(0,0,0,0.5)",
+            WebkitBackdropFilter: "blur(24px)",
+            borderBottom: "1px solid rgba(255,255,255,0.055)",
+            boxShadow: "0 2px 24px rgba(0,0,0,0.6)",
           }}
         >
-          <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "white", boxShadow: "0 4px 12px rgba(139,92,246,0.35)",
-            }}>
+          <Link
+            href="/dashboard"
+            style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}
+          >
+            <div
+              style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "white",
+                boxShadow: "0 4px 12px rgba(139,92,246,0.38)",
+                flexShrink: 0,
+              }}
+            >
               <NfcWave />
             </div>
-            <span style={{ color: "rgba(255,255,255,0.88)", fontWeight: 700, fontSize: 14, letterSpacing: "-0.03em" }}>
+            <span
+              style={{
+                color: "rgba(255,255,255,0.9)",
+                fontWeight: 700,
+                fontSize: 14,
+                letterSpacing: "-0.03em",
+              }}
+            >
               TikTag
             </span>
           </Link>
 
-          <span style={{ color: "rgba(255,255,255,0.36)", fontSize: 12, fontWeight: 500 }}>
+          <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500 }}>
             {pageLabel}
           </span>
 
           <button
+            type="button"
             onClick={() => setSidebarOpen(true)}
             style={{
-              width: 34, height: 34, borderRadius: 9, cursor: "pointer",
-              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+              width: 36, height: 36,
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "rgba(255,255,255,0.5)",
+              color: "rgba(255,255,255,0.55)",
+              cursor: "pointer",
+              flexShrink: 0,
+              WebkitTapHighlightColor: "transparent",
             }}
           >
-            <Menu size={16} />
+            <Menu size={17} />
           </button>
         </div>
 
-        {/* Mobile backdrop */}
+        {/* Mobile backdrop — below topbar */}
         {sidebarOpen && (
           <div
             className="md:hidden"
             style={{
-              position: "fixed", inset: 0, zIndex: 40,
-              background: "rgba(0,0,0,0.72)", backdropFilter: "blur(4px)",
+              position: "fixed",
+              inset: 0,
+              zIndex: 998,
+              background: "rgba(0,0,0,0.75)",
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
             }}
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
+        {/* Sidebar (directly imported — no dynamic delay) */}
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main style={{ flex: 1, overflow: "auto", minHeight: "100vh" }}>
-          <div className="md:hidden" style={{ height: 56 }} />
+        {/* Main content */}
+        <main
+          className="flex-1 overflow-y-auto min-h-screen mt-14 md:mt-0"
+          style={{ position: "relative" }}
+        >
           {children}
         </main>
       </div>

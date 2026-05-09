@@ -371,14 +371,14 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* ── Stats row ────────────────────────────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }} className="grid-cols-2 md:grid-cols-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {statItems.map((s, i) => (
             <StatCard key={s.label} {...s} delay={0.05 + i * 0.06} />
           ))}
         </div>
 
         {/* ── Body: identity preview + right column ─────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 20, marginBottom: 20, alignItems: "start" }} className="grid-cols-1 md:grid-cols-[auto_1fr]">
+        <div className="grid grid-cols-1 md:grid-cols-[244px_1fr] gap-5 mb-5" style={{ alignItems: "start" }}>
           {/* Identity preview card */}
           <motion.div
             initial={{ opacity: 0, x: -16 }}
@@ -439,7 +439,7 @@ export default function DashboardPage() {
             >
               Quick Access
             </motion.p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {actions.map((a, i) => (
                 <QuickAction key={a.href} {...a} delay={0.24 + i * 0.05} />
               ))}
@@ -448,7 +448,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Bottom row: checklist + activity ─────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }} className="grid-cols-1 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Setup checklist / complete state */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
