@@ -19,8 +19,10 @@ export function useProfile(uid: string | undefined) {
     setLoading(true);
     setError(null);
 
-    console.log("[TikTag] Auth uid:", uid);
-    console.log("[TikTag] Profile path: users/" + uid);
+    if (process.env.NODE_ENV === "development") {
+      console.log("[TikTag] Auth uid:", uid);
+      console.log("[TikTag] Profile path: users/" + uid);
+    }
 
     let settled = false;
 
@@ -40,7 +42,9 @@ export function useProfile(uid: string | undefined) {
           settled = true;
 
           if (p === null) {
-            console.log("[TikTag] No profile document at users/" + uid + " — creating default");
+            if (process.env.NODE_ENV === "development") {
+              console.log("[TikTag] No profile document at users/" + uid + " — creating default");
+            }
             const email = auth.currentUser?.email ?? "";
             const defaults: Partial<UserProfile> = {
               uid,

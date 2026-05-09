@@ -142,7 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Main content */}
         <main
-          className="flex-1 overflow-y-auto min-h-screen mt-14 md:mt-0"
+          className="flex-1 overflow-y-auto min-h-screen pt-14 md:pt-0"
           style={{ position: "relative" }}
         >
           {children}

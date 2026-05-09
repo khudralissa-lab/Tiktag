@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { isFirebaseBlocked } from "@/lib/firebaseError";
+import { isFirebaseBlocked, getFirebaseErrorCode } from "@/lib/firebaseError";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 import { motion } from "framer-motion";
 
@@ -47,10 +47,15 @@ export default function LoginForm() {
       router.push("/dashboard");
     } catch (err: unknown) {
       console.error("[TikTag] Google login failed:", err);
+      const code = getFirebaseErrorCode(err);
       if (isFirebaseBlocked(err)) {
         setBlocked(true);
+      } else if (code === "auth/unauthorized-domain") {
+        setError("Google sign-in is not yet enabled for this domain. Please sign in with email and password.");
+      } else if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+        // User dismissed — no error needed
       } else {
-        setError("Google sign-in failed.");
+        setError("Google sign-in failed. Please try again.");
       }
     }
   };

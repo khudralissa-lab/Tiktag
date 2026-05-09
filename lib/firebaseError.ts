@@ -7,3 +7,10 @@ export function isFirebaseBlocked(err: unknown): boolean {
     (msg.includes("firestore.googleapis.com") && msg.includes("fail"))
   );
 }
+
+export function getFirebaseErrorCode(err: unknown): string | null {
+  if (err && typeof err === "object" && "code" in err) {
+    return String((err as { code: string }).code);
+  }
+  return null;
+}
