@@ -1,108 +1,218 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles, MessageSquare, User, Lightbulb } from "lucide-react";
 
-const features = [
+const capabilities = [
   {
-    icon: User,
+    tag: "Identity",
     title: "AI Bio Generator",
-    desc: "Input your job title and tone — get a polished, professional bio instantly.",
+    desc: "Input your role and tone. Receive a polished, professional bio in seconds — crafted to make every first impression count.",
+    output: [
+      { role: "you", text: "Title: Senior Product Designer. Tone: Confident, minimal." },
+      { role: "ai", text: "Shaping digital experiences with precision and restraint. 8 years at the intersection of form and function — turning complex systems into intuitive products people love to use." },
+    ],
     live: true,
   },
   {
-    icon: MessageSquare,
-    title: "Smart Message Suggestions",
-    desc: "AI-crafted WhatsApp intro messages tailored to every new connection.",
+    tag: "Connection",
+    title: "Smart Message Engine",
+    desc: "AI-crafted WhatsApp opening messages tailored to the context of your meeting — sector, seniority, and intent.",
+    output: [
+      { role: "you", text: "Meeting: Dubai Design Week. Contact: Creative Director." },
+      { role: "ai", text: "Great connecting at DDW — your work on spatial systems was genuinely inspiring. I'd love to explore a potential collaboration." },
+    ],
     live: true,
   },
   {
-    icon: Lightbulb,
-    title: "Profile Improvement Assistant",
-    desc: "Get personalized AI tips to make your profile perform better.",
+    tag: "Optimization",
+    title: "Profile Intelligence",
+    desc: "Your profile is continuously analyzed. AI surfaces actionable insights to increase engagement, click-throughs, and saves.",
+    output: null,
     live: false,
-  },
-  {
-    icon: Sparkles,
-    title: "AI Menu & Help Assistant",
-    desc: "Smart AI assistant for restaurant menus, FAQs, and customer interactions.",
-    live: false,
+    preview: [
+      { icon: "↑", text: "Adding a video intro could increase profile saves by 34%", color: "#4ade80" },
+      { icon: "⚡", text: "Your WhatsApp CTA is your highest-converting link", color: "#a78bfa" },
+      { icon: "◎", text: "Peak engagement window: Tue–Thu, 9–11AM GST", color: "#60a5fa" },
+    ],
   },
 ];
 
-export default function AIReady() {
+function TerminalBlock({ lines }: { lines: { role: string; text: string }[] }) {
   return (
-    <section
-      className="py-28 px-6"
-      style={{ background: "rgba(255,255,255,0.01)" }}
+    <div
+      style={{
+        borderRadius: 10,
+        background: "rgba(0,0,0,0.5)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        padding: "14px 16px",
+        marginTop: 16,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
     >
-      <div className="max-w-5xl mx-auto">
+      {lines.map(({ role, text }, i) => (
+        <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <span
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              flexShrink: 0,
+              marginTop: 1,
+              color: role === "ai" ? "rgba(139,92,246,0.7)" : "rgba(255,255,255,0.3)",
+              fontFamily: "monospace",
+              minWidth: 20,
+            }}
+          >
+            {role === "ai" ? "AI" : "→"}
+          </span>
+          <p
+            style={{
+              color: role === "ai" ? "rgba(255,255,255,0.78)" : "rgba(255,255,255,0.38)",
+              fontSize: 12,
+              lineHeight: 1.6,
+              fontFamily: role === "you" ? "monospace" : "inherit",
+            }}
+          >
+            {text}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function IntelligenceSection() {
+  return (
+    <section style={{ padding: "120px 24px" }}>
+      <div className="max-w-6xl mx-auto">
         <motion.div
-          className="text-center mb-16"
+          className="text-center"
+          style={{ marginBottom: 72 }}
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.65 }}
         >
-          <div
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-indigo-300 mb-6"
+          <p
             style={{
-              background: "rgba(99,102,241,0.09)",
-              border: "1px solid rgba(99,102,241,0.2)",
+              color: "rgba(139,92,246,0.8)",
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              marginBottom: 16,
             }}
           >
-            <Sparkles className="w-3 h-3" />
-            AI-Powered
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            Intelligence built in
+            Neural Identity Layer
+          </p>
+          <h2
+            style={{
+              color: "rgba(255,255,255,0.94)",
+              fontSize: "clamp(32px, 4.5vw, 52px)",
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.08,
+              marginBottom: 16,
+            }}
+          >
+            Intelligence, built in.
           </h2>
-          <p className="text-white/40 text-lg max-w-xl mx-auto">
-            Tiktag uses AI to help you create better profiles, smarter messages, and sharper
-            first impressions.
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 17, maxWidth: 460, margin: "0 auto" }}>
+            AI doesn't live in a separate tab. It shapes every word, every connection, every impression.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-3">
-          {features.map(({ icon: Icon, title, desc, live }, i) => (
+        <div className="grid md:grid-cols-3 gap-4">
+          {capabilities.map(({ tag, title, desc, output, live, preview }, i) => (
             <motion.div
               key={title}
-              className="p-6 rounded-2xl flex items-start gap-4"
-              style={{
-                background: "rgba(99,102,241,0.04)",
-                border: "1px solid rgba(99,102,241,0.10)",
-              }}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.09 }}
+              transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                padding: "28px",
+                borderRadius: 20,
+                background: "rgba(139,92,246,0.035)",
+                border: "1px solid rgba(139,92,246,0.1)",
+                display: "flex",
+                flexDirection: "column",
+              }}
             >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                <span
+                  style={{
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    background: "rgba(139,92,246,0.12)",
+                    border: "1px solid rgba(139,92,246,0.2)",
+                    color: "rgba(167,139,250,0.8)",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {tag}
+                </span>
+                {!live && (
+                  <span
+                    style={{
+                      padding: "3px 8px",
+                      borderRadius: 20,
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "rgba(255,255,255,0.28)",
+                      fontSize: 9,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Coming soon
+                  </span>
+                )}
+              </div>
+
+              <h3
                 style={{
-                  background: "rgba(99,102,241,0.14)",
-                  border: "1px solid rgba(99,102,241,0.2)",
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: 17,
+                  fontWeight: 600,
+                  letterSpacing: "-0.02em",
+                  marginBottom: 10,
                 }}
               >
-                <Icon className="w-5 h-5 text-indigo-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <h3 className="text-white font-semibold text-sm">{title}</h3>
-                  {!live && (
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[10px] font-medium text-indigo-300"
-                      style={{
-                        background: "rgba(99,102,241,0.12)",
-                        border: "1px solid rgba(99,102,241,0.2)",
-                      }}
-                    >
-                      Soon
-                    </span>
-                  )}
+                {title}
+              </h3>
+              <p style={{ color: "rgba(255,255,255,0.36)", fontSize: 13, lineHeight: 1.65, marginBottom: "auto" }}>
+                {desc}
+              </p>
+
+              {output && <TerminalBlock lines={output} />}
+
+              {preview && (
+                <div
+                  style={{
+                    borderRadius: 10,
+                    background: "rgba(0,0,0,0.5)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    padding: "14px 16px",
+                    marginTop: 16,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                  }}
+                >
+                  {preview.map(({ icon, text, color }, j) => (
+                    <div key={j} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <span style={{ color, fontSize: 11, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+                      <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 11, lineHeight: 1.55 }}>{text}</p>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-white/38 text-sm leading-relaxed">{desc}</p>
-              </div>
+              )}
             </motion.div>
           ))}
         </div>

@@ -2,72 +2,167 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, MessageSquare } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function FinalCTA() {
   return (
-    <section className="py-20 px-6">
-      <div className="max-w-4xl mx-auto">
+    <section style={{ padding: "100px 24px 120px" }}>
+      <div className="max-w-5xl mx-auto">
         <motion.div
-          className="relative text-center p-12 md:p-16 rounded-3xl overflow-hidden"
           style={{
-            background: "rgba(99,102,241,0.05)",
-            border: "1px solid rgba(99,102,241,0.18)",
+            position: "relative",
+            textAlign: "center",
+            padding: "80px 40px",
+            borderRadius: 32,
+            overflow: "hidden",
+            background: "rgba(139,92,246,0.04)",
+            border: "1px solid rgba(139,92,246,0.14)",
           }}
-          initial={{ opacity: 0, y: 32 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
         >
           <div
-            className="absolute inset-0 pointer-events-none"
             style={{
+              position: "absolute",
+              inset: 0,
               background:
-                "radial-gradient(ellipse 70% 60% at 50% -10%, rgba(99,102,241,0.18) 0%, transparent 70%)",
+                "radial-gradient(ellipse 70% 55% at 50% -5%, rgba(139,92,246,0.18) 0%, rgba(99,102,241,0.06) 50%, transparent 75%)",
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 1,
+              background: "linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.5) 35%, rgba(99,102,241,0.5) 65%, transparent 100%)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)",
+              backgroundSize: "64px 64px",
+              WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%)",
+              maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%)",
+              pointerEvents: "none",
             }}
           />
 
-          <div className="relative z-10">
-            <p className="text-indigo-400 text-[11px] font-semibold tracking-[0.18em] uppercase mb-4">
-              Get started today
-            </p>
-            <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4 leading-tight">
-              Your identity should be as
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <motion.p
+              style={{
+                color: "rgba(167,139,250,0.7)",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                marginBottom: 20,
+              }}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Begin today
+            </motion.p>
+
+            <motion.h2
+              style={{
+                color: "rgba(255,255,255,0.95)",
+                fontSize: "clamp(36px, 5.5vw, 64px)",
+                fontWeight: 700,
+                letterSpacing: "-0.04em",
+                lineHeight: 1.06,
+                marginBottom: 20,
+              }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            >
+              Shape your presence.
               <br />
               <span
                 style={{
-                  background: "linear-gradient(135deg, #a5b4fc 0%, #818cf8 50%, #6366f1 100%)",
+                  background: "linear-gradient(135deg, #e2d9f3 0%, #c4b5fd 28%, #a78bfa 55%, #8b5cf6 80%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                smart as your business.
+                Now.
               </span>
-            </h2>
-            <p className="text-white/38 text-lg mb-10 max-w-md mx-auto">
-              Join thousands of professionals and businesses who tap smarter with Tiktag.
-            </p>
+            </motion.h2>
 
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <motion.p
+              style={{
+                color: "rgba(255,255,255,0.35)",
+                fontSize: 18,
+                lineHeight: 1.65,
+                maxWidth: 440,
+                margin: "0 auto 48px",
+              }}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              Join over 12,000 professionals and businesses who've elevated how they connect with the world.
+            </motion.p>
+
+            <motion.div
+              style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+            >
               <Link
                 href="/register"
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl text-white text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                className="group flex items-center gap-2.5 rounded-xl font-semibold transition-all duration-300"
                 style={{
-                  background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-                  boxShadow: "0 8px 32px rgba(99,102,241,0.35)",
+                  padding: "15px 32px",
+                  background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
+                  boxShadow: "0 8px 40px rgba(139,92,246,0.35), 0 0 0 1px rgba(139,92,246,0.15)",
+                  color: "white",
+                  fontSize: 16,
                 }}
               >
-                Get Started
-                <ArrowRight className="w-4 h-4" />
+                Create your identity
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
               <a
                 href="mailto:hello@tiktag.io"
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl text-white/55 text-sm font-medium border border-white/[0.09] hover:text-white hover:bg-white/[0.04] transition-all duration-200"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "15px 32px",
+                  borderRadius: 12,
+                  color: "rgba(255,255,255,0.45)",
+                  border: "1px solid rgba(255,255,255,0.09)",
+                  fontSize: 16,
+                  fontWeight: 500,
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.75)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.45)";
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                }}
               >
-                <MessageSquare className="w-4 h-4" />
-                Talk to Sales
+                Talk to us
               </a>
-            </div>
+            </motion.div>
           </div>
         </motion.div>
       </div>

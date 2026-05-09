@@ -1,144 +1,310 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { User, Phone, Link2, Download, Share2, QrCode, Palette } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
-const features = [
-  { icon: User, title: "Digital Profile", desc: "Name, title, bio, and photo" },
-  { icon: Phone, title: "Contact Buttons", desc: "Call, WhatsApp, Email" },
-  { icon: Link2, title: "Social Links", desc: "All your profiles, one place" },
-  { icon: Download, title: "Save Contact", desc: "One-tap vCard download" },
-  { icon: Share2, title: "Share Link", desc: "Shareable URL anywhere" },
-  { icon: QrCode, title: "QR Code", desc: "Auto-generated & downloadable" },
-  { icon: Palette, title: "Custom Theme", desc: "Accent color per profile" },
+const capabilities = [
+  {
+    title: "Always current.",
+    desc: "Update your profile once. Every card, every tap, every QR scan shows the latest version — instantly, everywhere.",
+  },
+  {
+    title: "Frictionless connections.",
+    desc: "One tap delivers call, WhatsApp, email, and every link. No typing, no searching, no lost cards.",
+  },
+  {
+    title: "Professionally crafted.",
+    desc: "AI-generated bio, custom theme, and a profile that evolves with your career — not stuck on a printed card.",
+  },
 ];
+
+function PremiumPhoneMockup() {
+  return (
+    <div
+      style={{
+        width: 220,
+        height: 440,
+        borderRadius: 44,
+        background: "linear-gradient(180deg, #141416 0%, #0a0a0c 100%)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        boxShadow:
+          "0 60px 120px rgba(0,0,0,0.75), 0 0 0 0.5px rgba(255,255,255,0.04), 0 0 60px rgba(139,92,246,0.07), inset 0 1px 0 rgba(255,255,255,0.06)",
+        position: "relative",
+        overflow: "hidden",
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 90,
+          height: 28,
+          background: "#0a0a0c",
+          borderRadius: "0 0 18px 18px",
+          zIndex: 10,
+        }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 180,
+          background: "linear-gradient(180deg, rgba(139,92,246,0.12) 0%, transparent 100%)",
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          paddingTop: 36,
+          paddingBottom: 20,
+          paddingLeft: 16,
+          paddingRight: 16,
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <motion.div
+          animate={{ scale: [1, 1.03, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 60%, #4f46e5 100%)",
+            boxShadow: "0 12px 32px rgba(139,92,246,0.45)",
+            marginBottom: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: 4,
+          }}
+        >
+          <span style={{ color: "white", fontWeight: 700, fontSize: 18 }}>AJ</span>
+        </motion.div>
+
+        <p style={{ color: "rgba(255,255,255,0.92)", fontSize: 15, fontWeight: 600, marginBottom: 3 }}>
+          Alex Johnson
+        </p>
+        <p style={{ color: "rgba(255,255,255,0.38)", fontSize: 11, marginBottom: 2 }}>Chief Design Officer</p>
+        <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 10, marginBottom: 18 }}>Dubai, UAE</p>
+
+        <div style={{ display: "flex", gap: 6, width: "100%", marginBottom: 14 }}>
+          {[
+            { label: "Call", bg: "rgba(74,222,128,0.12)", border: "rgba(74,222,128,0.2)", color: "#4ade80" },
+            { label: "Chat", bg: "rgba(139,92,246,0.14)", border: "rgba(139,92,246,0.22)", color: "#a78bfa" },
+            { label: "Mail", bg: "rgba(255,255,255,0.04)", border: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.38)" },
+          ].map(({ label, bg, border, color }) => (
+            <div
+              key={label}
+              style={{
+                flex: 1,
+                height: 36,
+                borderRadius: 12,
+                background: bg,
+                border: `1px solid ${border}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span style={{ color, fontSize: 10, fontWeight: 600 }}>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            { label: "Portfolio", highlight: true },
+            { label: "LinkedIn" },
+            { label: "Instagram" },
+            { label: "Dribbble" },
+            { label: "Save Contact" },
+          ].map(({ label, highlight }) => (
+            <div
+              key={label}
+              style={{
+                height: 36,
+                borderRadius: 12,
+                background: highlight ? "rgba(139,92,246,0.16)" : "rgba(255,255,255,0.03)",
+                border: `1px solid ${highlight ? "rgba(139,92,246,0.28)" : "rgba(255,255,255,0.055)"}`,
+                display: "flex",
+                alignItems: "center",
+                paddingLeft: 12,
+                paddingRight: 12,
+                justifyContent: "space-between",
+              }}
+            >
+              <span style={{ color: highlight ? "rgba(167,139,250,0.9)" : "rgba(255,255,255,0.38)", fontSize: 11, fontWeight: highlight ? 500 : 400 }}>
+                {label}
+              </span>
+              {highlight && (
+                <span style={{ color: "rgba(139,92,246,0.5)", fontSize: 9 }}>→</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SmartProfile() {
   return (
-    <section className="py-28 px-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <section style={{ padding: "120px 24px" }}>
+      <div className="max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-16 lg:gap-24 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -24 }}
+            className="flex justify-center order-2 md:order-1"
+            initial={{ opacity: 0, x: -28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <p className="text-indigo-400 text-[11px] font-semibold tracking-[0.18em] uppercase mb-3">
-              Smart Profile
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4 leading-tight">
-              Everything about you, in one link
-            </h2>
-            <p className="text-white/40 text-base leading-relaxed mb-8">
-              Your Tiktag profile is a powerful digital identity — not just a link in bio. It
-              updates instantly, tracks every interaction, and works from any device.
-            </p>
+            <div style={{ position: "relative" }}>
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: -60,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 200,
+                  height: 80,
+                  background: "radial-gradient(ellipse, rgba(139,92,246,0.2) 0%, transparent 70%)",
+                  filter: "blur(24px)",
+                  pointerEvents: "none",
+                }}
+              />
+              <PremiumPhoneMockup />
 
-            <div className="grid grid-cols-2 gap-2.5">
-              {features.map(({ icon: Icon, title, desc }) => (
-                <div
-                  key={title}
-                  className="flex items-start gap-3 p-3.5 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.05)",
-                  }}
-                >
-                  <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{
-                      background: "rgba(99,102,241,0.10)",
-                      border: "1px solid rgba(99,102,241,0.15)",
-                    }}
-                  >
-                    <Icon className="w-3.5 h-3.5 text-indigo-400" />
-                  </div>
-                  <div>
-                    <p className="text-white text-xs font-semibold leading-tight">{title}</p>
-                    <p className="text-white/32 text-[11px] mt-0.5">{desc}</p>
-                  </div>
-                </div>
-              ))}
+              <motion.div
+                style={{
+                  position: "absolute",
+                  top: 80,
+                  right: -80,
+                  padding: "10px 14px",
+                  borderRadius: 12,
+                  background: "rgba(10,10,12,0.92)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(16px)",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
+                  minWidth: 100,
+                }}
+                initial={{ opacity: 0, x: 16 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5, duration: 0.6 }}
+              >
+                <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 8, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 4 }}>
+                  Profile Views
+                </p>
+                <p style={{ color: "white", fontSize: 20, fontWeight: 700, lineHeight: 1 }}>847</p>
+                <p style={{ color: "#4ade80", fontSize: 9, marginTop: 3 }}>↑ 12% today</p>
+              </motion.div>
             </div>
           </motion.div>
 
           <motion.div
-            className="flex justify-center"
-            initial={{ opacity: 0, x: 24 }}
+            className="order-1 md:order-2"
+            initial={{ opacity: 0, x: 28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.1 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div
-              className="w-52 h-[420px] rounded-[3rem] relative overflow-hidden"
+            <p
               style={{
-                background: "linear-gradient(180deg, #141414 0%, #0a0a0a 100%)",
-                border: "1px solid rgba(255,255,255,0.09)",
-                boxShadow: "0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(99,102,241,0.06)",
+                color: "rgba(139,92,246,0.8)",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                marginBottom: 20,
               }}
             >
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-black rounded-b-2xl z-10" />
-              <div
-                className="absolute top-0 left-0 right-0 h-48"
+              Smart Profile
+            </p>
+            <h2
+              style={{
+                color: "rgba(255,255,255,0.94)",
+                fontSize: "clamp(28px, 3.5vw, 44px)",
+                fontWeight: 700,
+                letterSpacing: "-0.03em",
+                lineHeight: 1.1,
+                marginBottom: 20,
+              }}
+            >
+              Your presence,
+              <br />
+              <span
                 style={{
-                  background:
-                    "linear-gradient(180deg, rgba(99,102,241,0.14) 0%, transparent 100%)",
+                  background: "linear-gradient(135deg, #c4b5fd, #a78bfa, #8b5cf6)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
                 }}
-              />
-              <div className="relative pt-10 pb-6 px-4 h-full flex flex-col items-center">
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center mb-2 mt-1"
-                  style={{
-                    background: "linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)",
-                    boxShadow: "0 8px 24px rgba(99,102,241,0.35)",
-                  }}
+              >
+                perfected.
+              </span>
+            </h2>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.38)",
+                fontSize: 16,
+                lineHeight: 1.7,
+                marginBottom: 40,
+                maxWidth: 420,
+              }}
+            >
+              Not a link in bio. An intelligent digital identity that evolves, adapts, and makes every interaction count.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 24, marginBottom: 40 }}>
+              {capabilities.map(({ title, desc }, i) => (
+                <motion.div
+                  key={title}
+                  initial={{ opacity: 0, x: 16 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55, delay: i * 0.1 }}
+                  style={{ display: "flex", gap: 16, alignItems: "flex-start" }}
                 >
-                  <span className="text-white font-semibold">AJ</span>
-                </div>
-                <p className="text-white font-semibold text-sm">Alex Johnson</p>
-                <p className="text-white/40 text-xs mb-0.5">Product Designer</p>
-                <p className="text-white/22 text-[10px] mb-5">Dubai, UAE</p>
-
-                <div className="flex gap-1.5 w-full mb-4">
-                  {[
-                    { l: "Call", c: "bg-green-500/15 border-green-500/20 text-green-400" },
-                    { l: "Chat", c: "bg-indigo-500/15 border-indigo-500/25 text-indigo-400" },
-                    { l: "Mail", c: "bg-white/[0.04] border-white/[0.07] text-white/40" },
-                  ].map(({ l, c }) => (
-                    <div
-                      key={l}
-                      className={`flex-1 h-9 rounded-xl border flex items-center justify-center text-[10px] font-medium ${c}`}
-                    >
-                      {l}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="w-full space-y-2">
-                  {["Portfolio", "LinkedIn", "Instagram", "Twitter", "Save Contact"].map(
-                    (label, i) => (
-                      <div
-                        key={label}
-                        className={`h-8 rounded-xl flex items-center px-3 border ${
-                          i === 0
-                            ? "bg-indigo-500/20 border-indigo-500/30"
-                            : "bg-white/[0.03] border-white/[0.06]"
-                        }`}
-                      >
-                        <span
-                          className={`text-[11px] ${
-                            i === 0 ? "text-indigo-300" : "text-white/42"
-                          }`}
-                        >
-                          {label}
-                        </span>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
+                  <div
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+                      flexShrink: 0,
+                      marginTop: 6,
+                      boxShadow: "0 0 8px rgba(139,92,246,0.5)",
+                    }}
+                  />
+                  <div>
+                    <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
+                      {title}
+                    </p>
+                    <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, lineHeight: 1.6 }}>{desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
+
+            <Link
+              href="/register"
+              className="group inline-flex items-center gap-2 font-medium transition-colors duration-200"
+              style={{ color: "rgba(167,139,250,0.8)", fontSize: 14 }}
+            >
+              Create your profile
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Link>
           </motion.div>
         </div>
       </div>
