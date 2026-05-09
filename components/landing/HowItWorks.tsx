@@ -196,7 +196,7 @@ const scenes = [
 
 export default function CinematicScene() {
   return (
-    <section style={{ padding: "120px 24px" }}>
+    <section style={{ padding: "120px 24px", background: "#040412" }}>
       <div className="max-w-6xl mx-auto">
         <motion.div
           className="text-center"
@@ -242,15 +242,16 @@ export default function CinematicScene() {
               style={{
                 borderRadius: 20,
                 overflow: "hidden",
-                background: "rgba(255,255,255,0.015)",
-                border: "1px solid rgba(255,255,255,0.055)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.012) 100%)",
+                border: "1px solid rgba(255,255,255,0.065)",
+                boxShadow: "0 16px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
               }}
             >
               <div
                 style={{
                   padding: "32px 28px 20px",
-                  background: "rgba(255,255,255,0.01)",
-                  borderBottom: "1px solid rgba(255,255,255,0.04)",
+                  background: "linear-gradient(180deg, rgba(88,28,235,0.05) 0%, rgba(255,255,255,0.008) 100%)",
+                  borderBottom: "1px solid rgba(255,255,255,0.05)",
                 }}
               >
                 {visual}

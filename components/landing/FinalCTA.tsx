@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function FinalCTA() {
   return (
-    <section style={{ padding: "100px 24px 120px" }}>
+    <section style={{ padding: "100px 24px 120px", background: "#020208" }}>
       <div className="max-w-5xl mx-auto">
         <motion.div
           style={{
@@ -15,8 +15,9 @@ export default function FinalCTA() {
             padding: "80px 40px",
             borderRadius: 32,
             overflow: "hidden",
-            background: "rgba(139,92,246,0.04)",
-            border: "1px solid rgba(139,92,246,0.14)",
+            background: "linear-gradient(180deg, rgba(139,92,246,0.07) 0%, rgba(88,28,235,0.03) 50%, rgba(0,0,0,0) 100%)",
+            border: "1px solid rgba(139,92,246,0.18)",
+            boxShadow: "0 0 120px rgba(88,28,235,0.1), 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(139,92,246,0.12)",
           }}
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -28,7 +29,7 @@ export default function FinalCTA() {
               position: "absolute",
               inset: 0,
               background:
-                "radial-gradient(ellipse 70% 55% at 50% -5%, rgba(139,92,246,0.18) 0%, rgba(99,102,241,0.06) 50%, transparent 75%)",
+                "radial-gradient(ellipse 80% 65% at 50% -5%, rgba(139,92,246,0.24) 0%, rgba(99,102,241,0.09) 50%, transparent 75%)",
               pointerEvents: "none",
             }}
           />

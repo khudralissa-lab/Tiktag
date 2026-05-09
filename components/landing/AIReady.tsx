@@ -42,8 +42,9 @@ function TerminalBlock({ lines }: { lines: { role: string; text: string }[] }) {
     <div
       style={{
         borderRadius: 10,
-        background: "rgba(0,0,0,0.5)",
+        background: "rgba(2,2,14,0.9)",
         border: "1px solid rgba(255,255,255,0.06)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
         padding: "14px 16px",
         marginTop: 16,
         display: "flex",
@@ -86,7 +87,7 @@ function TerminalBlock({ lines }: { lines: { role: string; text: string }[] }) {
 
 export default function IntelligenceSection() {
   return (
-    <section style={{ padding: "120px 24px" }}>
+    <section style={{ padding: "120px 24px", background: "#07070f", position: "relative", overflow: "hidden" }}>
       <div className="max-w-6xl mx-auto">
         <motion.div
           className="text-center"
@@ -136,8 +137,9 @@ export default function IntelligenceSection() {
               style={{
                 padding: "28px",
                 borderRadius: 20,
-                background: "rgba(139,92,246,0.035)",
-                border: "1px solid rgba(139,92,246,0.1)",
+                background: "linear-gradient(180deg, rgba(139,92,246,0.07) 0%, rgba(99,102,241,0.025) 100%)",
+                border: "1px solid rgba(139,92,246,0.14)",
+                boxShadow: "0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(139,92,246,0.08)",
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -196,8 +198,9 @@ export default function IntelligenceSection() {
                 <div
                   style={{
                     borderRadius: 10,
-                    background: "rgba(0,0,0,0.5)",
+                    background: "rgba(2,2,14,0.9)",
                     border: "1px solid rgba(255,255,255,0.06)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
                     padding: "14px 16px",
                     marginTop: 16,
                     display: "flex",

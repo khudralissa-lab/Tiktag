@@ -31,7 +31,7 @@ const teamMembers = [
 
 export default function ForBusinesses() {
   return (
-    <section style={{ padding: "120px 24px", background: "rgba(255,255,255,0.008)" }}>
+    <section style={{ padding: "120px 24px", background: "#05050f", position: "relative", overflow: "hidden" }}>
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-2 gap-16 lg:gap-24 items-start">
           <motion.div
@@ -128,8 +128,9 @@ export default function ForBusinesses() {
             <div
               style={{
                 borderRadius: 22,
-                background: "rgba(255,255,255,0.018)",
-                border: "1px solid rgba(255,255,255,0.055)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.016) 100%)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                boxShadow: "0 24px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)",
                 padding: "28px",
               }}
             >
@@ -166,8 +167,8 @@ export default function ForBusinesses() {
                       justifyContent: "space-between",
                       padding: "12px 14px",
                       borderRadius: 12,
-                      background: "rgba(255,255,255,0.02)",
-                      border: "1px solid rgba(255,255,255,0.04)",
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.055)",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

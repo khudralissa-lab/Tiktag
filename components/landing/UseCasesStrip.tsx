@@ -74,7 +74,7 @@ export default function CollectionsStrip() {
   return (
     <section
       id="collections"
-      style={{ borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "56px 24px" }}
+      style={{ borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "56px 24px", background: "#050510" }}
     >
       <div className="max-w-6xl mx-auto">
         <motion.p
@@ -106,8 +106,9 @@ export default function CollectionsStrip() {
               style={{
                 padding: "20px 24px",
                 borderRadius: 16,
-                background: "rgba(255,255,255,0.015)",
-                border: "1px solid rgba(255,255,255,0.055)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.014) 100%)",
+                border: "1px solid rgba(255,255,255,0.065)",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
                 minWidth: 160,
                 flex: "1 1 160px",
                 maxWidth: 220,

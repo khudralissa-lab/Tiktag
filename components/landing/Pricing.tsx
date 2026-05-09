@@ -66,8 +66,16 @@ const plans = [
 
 export default function Pricing() {
   return (
-    <section id="pricing" style={{ padding: "120px 24px" }}>
-      <div className="max-w-6xl mx-auto">
+    <section id="pricing" style={{ padding: "120px 24px", background: "#040410", position: "relative", overflow: "hidden" }}>
+      <div style={{
+        position: "absolute",
+        top: 0, left: "50%",
+        transform: "translateX(-50%)",
+        width: "70%", height: 480,
+        background: "radial-gradient(ellipse 55% 50% at 50% 0%, rgba(88,28,235,0.06) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
+      <div className="max-w-6xl mx-auto" style={{ position: "relative" }}>
         <motion.div
           className="text-center"
           style={{ marginBottom: 72 }}
@@ -116,10 +124,12 @@ export default function Pricing() {
                 display: "flex",
                 flexDirection: "column",
                 background: highlight
-                  ? "linear-gradient(180deg, rgba(139,92,246,0.1) 0%, rgba(99,102,241,0.04) 100%)"
-                  : "rgba(255,255,255,0.018)",
-                border: `1px solid ${highlight ? "rgba(139,92,246,0.3)" : "rgba(255,255,255,0.055)"}`,
-                boxShadow: highlight ? "0 0 60px rgba(139,92,246,0.08)" : "none",
+                  ? "linear-gradient(180deg, rgba(139,92,246,0.12) 0%, rgba(99,102,241,0.04) 100%)"
+                  : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.016) 100%)",
+                border: `1px solid ${highlight ? "rgba(139,92,246,0.32)" : "rgba(255,255,255,0.07)"}`,
+                boxShadow: highlight
+                  ? "0 0 80px rgba(139,92,246,0.12), 0 16px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(139,92,246,0.1)"
+                  : "0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)",
               }}
             >
               {highlight && (

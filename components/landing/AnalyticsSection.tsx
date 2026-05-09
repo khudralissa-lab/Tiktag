@@ -20,8 +20,17 @@ const sources = [
 
 export default function AnalyticsSection() {
   return (
-    <section style={{ padding: "120px 24px", background: "rgba(255,255,255,0.008)" }}>
-      <div className="max-w-6xl mx-auto">
+    <section style={{ padding: "120px 24px", background: "#060612", position: "relative", overflow: "hidden" }}>
+      {/* Atmospheric top glow */}
+      <div style={{
+        position: "absolute",
+        top: 0, left: "50%",
+        transform: "translateX(-50%)",
+        width: "80%", height: 400,
+        background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(88,28,235,0.07) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
+      <div className="max-w-6xl mx-auto" style={{ position: "relative" }}>
         <motion.div
           className="text-center"
           style={{ marginBottom: 72 }}
@@ -70,8 +79,9 @@ export default function AnalyticsSection() {
               style={{
                 padding: "20px",
                 borderRadius: 18,
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.055)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.018) 100%)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
                 position: "relative",
                 overflow: "hidden",
               }}
@@ -124,8 +134,9 @@ export default function AnalyticsSection() {
             style={{
               padding: "24px",
               borderRadius: 18,
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.055)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.016) 100%)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
@@ -184,8 +195,9 @@ export default function AnalyticsSection() {
             style={{
               padding: "24px",
               borderRadius: 18,
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.055)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.016) 100%)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
               display: "flex",
               flexDirection: "column",
               gap: 20,

@@ -14,7 +14,7 @@ import Footer from "@/components/landing/Footer";
 
 export default function LandingPage() {
   return (
-    <main className="bg-black text-white overflow-x-hidden">
+    <main className="text-white overflow-x-hidden" style={{ background: "#020208" }}>
       <Navbar />
       <Hero />
       <CollectionsStrip />
