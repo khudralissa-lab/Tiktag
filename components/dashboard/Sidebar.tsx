@@ -50,7 +50,7 @@ function SidebarInner({ onClose }: { onClose: () => void }) {
   return (
     <div style={{
       width: 252,
-      height: "100vh",
+      height: "100%",
       display: "flex",
       flexDirection: "column",
       background: "linear-gradient(180deg, #060612 0%, #050510 100%)",
@@ -238,7 +238,7 @@ export default function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean;
         {isOpen && (
           <motion.div
             className="md:hidden"
-            style={{ position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 50 }}
+            style={{ position: "fixed", top: 56, left: 0, bottom: 0, zIndex: 9002 }}
             initial={{ x: -252 }}
             animate={{ x: 0 }}
             exit={{ x: -252 }}

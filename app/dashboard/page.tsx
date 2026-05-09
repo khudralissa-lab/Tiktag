@@ -16,7 +16,8 @@ import BlockedBanner from "@/components/ui/BlockedBanner";
 import PageSkeleton from "@/components/ui/PageSkeleton";
 import type { AnalyticsEvent } from "@/types";
 import { useDashboard } from "@/contexts/DashboardContext";
-import { statsByRole, quickActionsByRole } from "@/lib/dashboardConfig";
+import { statsByRole, quickActionsByRole, EXPERIENCE_OPTIONS, type UserType } from "@/lib/dashboardConfig";
+import { useToast, Toast } from "@/components/ui/Toast";
 
 const BASE_URL = "https://tiktag.pages.dev";
 const spr = { type: "spring" as const, stiffness: 260, damping: 22 };
@@ -224,7 +225,8 @@ function QuickAction({ href, icon: Icon, label, desc, color, delay }: {
 
 export default function DashboardPage() {
   const uid = auth.currentUser?.uid;
-  const { profile, loading, error, retry, userType } = useDashboard();
+  const { profile, loading, error, retry, userType, update } = useDashboard();
+  const { message: toastMsg, show: showToast, dismiss: dismissToast } = useToast();
 
   const [stats, setStats] = useState({ views: 0, clicks: 0, qr: 0, saves: 0, nfc: 0 });
   const [recentEvents, setRecentEvents] = useState<AnalyticsEvent[]>([]);
@@ -257,6 +259,12 @@ export default function DashboardPage() {
     navigator.clipboard.writeText(profileUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
+  };
+
+  const handleSwitchExperience = async (type: UserType) => {
+    if (type === userType) return;
+    await update({ userType: type });
+    showToast(`Switched to ${type.charAt(0).toUpperCase() + type.slice(1)} mode`);
   };
 
   // Role-adaptive config
@@ -338,6 +346,43 @@ export default function DashboardPage() {
               </Link>
             </div>
           )}
+        </motion.div>
+
+        {/* ── Experience Mode Switcher ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spr, delay: 0.03 }}
+          style={{ marginBottom: 20 }}
+        >
+          <p style={{ color: "rgba(255,255,255,0.18)", fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 8px" }}>
+            Experience Mode
+          </p>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {EXPERIENCE_OPTIONS.map((opt) => {
+              const Icon = opt.icon;
+              const active = userType === opt.type;
+              return (
+                <button
+                  key={opt.type}
+                  onClick={() => handleSwitchExperience(opt.type)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "6px 13px", borderRadius: 20, cursor: "pointer",
+                    background: active ? `${opt.color}18` : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${active ? `${opt.color}45` : "rgba(255,255,255,0.07)"}`,
+                    color: active ? opt.color : "rgba(255,255,255,0.38)",
+                    fontSize: 12, fontWeight: active ? 600 : 450,
+                    transition: "all 0.18s",
+                    boxShadow: active ? `0 0 14px ${opt.glow}` : "none",
+                  }}
+                >
+                  <Icon size={12} />
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </motion.div>
 
         {/* ── Stats row (role-adaptive) ── */}
@@ -603,6 +648,8 @@ export default function DashboardPage() {
           </motion.div>
         )}
       </div>
+
+      <Toast message={toastMsg} onDismiss={dismissToast} />
     </div>
   );
 }

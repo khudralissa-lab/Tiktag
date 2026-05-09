@@ -11,19 +11,37 @@ import { DashboardProvider } from "@/contexts/DashboardContext";
 const AuthGuard = dynamic(() => import("@/components/auth/AuthGuard"), { ssr: false });
 
 const PAGE_LABELS: Record<string, string> = {
-  "/dashboard":           "Overview",
-  "/dashboard/profile":   "Profile Builder",
-  "/dashboard/contact":   "Profile Builder",
-  "/dashboard/company":   "Profile Builder",
-  "/dashboard/social":    "Profile Builder",
-  "/dashboard/links":     "Links",
-  "/dashboard/media":     "Portfolio",
-  "/dashboard/qr":        "QR Studio",
-  "/dashboard/nfc":       "NFC Products",
-  "/dashboard/analytics": "Analytics",
-  "/dashboard/theme":     "Themes",
-  "/dashboard/settings":  "Settings",
-  "/dashboard/ai":        "AI Tools",
+  "/dashboard":                  "Overview",
+  "/dashboard/profile":          "Profile Builder",
+  "/dashboard/contact":          "Profile Builder",
+  "/dashboard/company":          "Profile Builder",
+  "/dashboard/social":           "Profile Builder",
+  "/dashboard/links":            "Links",
+  "/dashboard/media":            "Portfolio",
+  "/dashboard/qr":               "QR Studio",
+  "/dashboard/nfc":              "NFC Products",
+  "/dashboard/analytics":        "Analytics",
+  "/dashboard/theme":            "Themes",
+  "/dashboard/settings":         "Settings",
+  "/dashboard/ai":               "AI Tools",
+  "/dashboard/teams":            "Teams",
+  "/dashboard/employee-cards":   "Employee Cards",
+  "/dashboard/billing":          "Billing",
+  "/dashboard/menu":             "Menu",
+  "/dashboard/reviews":          "Reviews",
+  "/dashboard/orders":           "WhatsApp Orders",
+  "/dashboard/event":            "Event Page",
+  "/dashboard/badges":           "Smart Badges",
+  "/dashboard/speakers":         "Speakers",
+  "/dashboard/attendees":        "Attendees",
+  "/dashboard/sponsors":         "Sponsors",
+  "/dashboard/networking":       "Networking Analytics",
+  "/dashboard/organization":     "Organization",
+  "/dashboard/users":            "Users",
+  "/dashboard/access":           "Access Control",
+  "/dashboard/devices":          "Devices",
+  "/dashboard/integrations":     "Integrations",
+  "/dashboard/security":         "Security",
 };
 
 function NfcWave() {
@@ -106,7 +124,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <button
             type="button"
-            onClick={() => setSidebarOpen(true)}
+            onClick={() => setSidebarOpen((prev) => !prev)}
             style={{
               width: 36, height: 36,
               borderRadius: 10,
@@ -130,7 +148,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             style={{
               position: "fixed",
               inset: 0,
-              zIndex: 998,
+              zIndex: 9001,
               background: "rgba(0,0,0,0.75)",
               backdropFilter: "blur(4px)",
               WebkitBackdropFilter: "blur(4px)",

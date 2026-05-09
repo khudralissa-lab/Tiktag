@@ -1,12 +1,15 @@
+"use client";
+
+import { use } from "react";
 import ComingSoonPage from "@/components/dashboard/ComingSoonPage";
 import { routeMetaBySlug } from "@/lib/dashboardConfig";
 
-export default async function PlaceholderPage({
+export default function PlaceholderPage({
   params,
 }: {
   params: Promise<{ slug: string[] }>;
 }) {
-  const { slug } = await params;
+  const { slug } = use(params);
   const key = slug.join("/");
   const meta = routeMetaBySlug[key];
 
