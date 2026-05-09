@@ -6,50 +6,75 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, User, Phone, Building2, Globe, Link2,
-  QrCode, Nfc, Palette, TrendingUp, Settings, LogOut, Zap, X, Images,
+  Home, User, Link2, LayoutGrid, QrCode, Wifi,
+  BarChart2, Sparkles, Palette, Users, CreditCard,
+  Settings, X, LogOut, type LucideIcon,
 } from "lucide-react";
 
-type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean; badge?: string };
-type Section = { label: string | null; items: NavItem[] };
+function NfcWave() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+      <path d="M6.8 17.2C5.1 15.5 4 13.4 4 12s1.1-3.5 2.8-5.2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M17.2 6.8C18.9 8.5 20 10.6 20 12s-1.1 3.5-2.8 5.2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M9.5 14.5c-.8-.8-1.5-1.6-1.5-2.5s.7-1.7 1.5-2.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M14.5 9.5c.8.8 1.5 1.6 1.5 2.5s-.7 1.7-1.5 2.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  );
+}
 
-const NAV: Section[] = [
-  {
-    label: null,
-    items: [{ href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true }],
-  },
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  exact?: boolean;
+  soon?: boolean;
+  matches?: string[];
+};
+
+type NavGroup = { label: string; items: NavItem[] };
+
+const NAV: NavGroup[] = [
   {
     label: "Identity",
     items: [
-      { href: "/dashboard/profile",  label: "Profile",  icon: User      },
-      { href: "/dashboard/contact",  label: "Contact",  icon: Phone     },
-      { href: "/dashboard/company",  label: "Company",  icon: Building2 },
-      { href: "/dashboard/social",   label: "Social",   icon: Globe     },
+      { href: "/dashboard", label: "Overview", icon: Home, exact: true },
+      {
+        href: "/dashboard/profile",
+        label: "Profile Builder",
+        icon: User,
+        matches: ["/dashboard/profile", "/dashboard/contact", "/dashboard/company", "/dashboard/social"],
+      },
+      { href: "/dashboard/links", label: "Links", icon: Link2 },
+      { href: "/dashboard/media", label: "Portfolio", icon: LayoutGrid },
     ],
   },
   {
-    label: "Content",
+    label: "Hardware",
     items: [
-      { href: "/dashboard/links", label: "Custom Links", icon: Link2   },
-      { href: "/dashboard/media", label: "Media",        icon: Images  },
+      { href: "/dashboard/qr", label: "QR Studio", icon: QrCode },
+      { href: "/dashboard/nfc", label: "NFC Products", icon: Wifi },
     ],
   },
   {
-    label: "Technology",
+    label: "Intelligence",
     items: [
-      { href: "/dashboard/qr",  label: "QR Studio", icon: QrCode },
-      { href: "/dashboard/nfc", label: "NFC Setup",  icon: Nfc   },
+      { href: "/dashboard/analytics", label: "Analytics", icon: BarChart2 },
+      { href: "#", label: "AI Tools", icon: Sparkles, soon: true },
     ],
   },
   {
     label: "Appearance",
-    items: [{ href: "/dashboard/theme", label: "Theme", icon: Palette }],
+    items: [{ href: "/dashboard/theme", label: "Themes", icon: Palette }],
   },
   {
-    label: "Insights",
-    items: [{ href: "/dashboard/analytics", label: "Analytics", icon: TrendingUp }],
+    label: "Business",
+    items: [
+      { href: "#", label: "Teams", icon: Users, soon: true },
+      { href: "#", label: "Billing", icon: CreditCard, soon: true },
+    ],
   },
   {
     label: "Account",
@@ -57,115 +82,136 @@ const NAV: Section[] = [
   },
 ];
 
-export default function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose?: () => void }) {
+function checkActive(item: NavItem, pathname: string): boolean {
+  if (item.soon) return false;
+  if (item.exact) return pathname === item.href;
+  if (item.matches) return item.matches.some((m) => pathname.startsWith(m));
+  return item.href !== "#" && (pathname === item.href || pathname.startsWith(item.href + "/"));
+}
+
+function SidebarInner({ onClose }: { onClose: () => void }) {
   const pathname = usePathname();
   const { logout } = useAuth();
   const router = useRouter();
   const user = auth.currentUser;
 
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+  const initial = user?.displayName?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "?";
+  const displayName = user?.displayName ?? user?.email?.split("@")[0] ?? "—";
 
   const handleLogout = async () => {
     await logout();
     router.push("/login");
   };
 
-  const userInitial = user?.email?.[0]?.toUpperCase() || "?";
-
-  const inner = (
-    <aside
-      className="w-[248px] shrink-0 flex flex-col h-screen"
-      style={{ background: "#05050a", borderRight: "1px solid rgba(255,255,255,0.055)" }}
-    >
-      {/* ─── Logo ──────────────────────────────────── */}
-      <div
-        className="px-5 h-[60px] flex items-center justify-between shrink-0"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-      >
-        <Link href="/dashboard" className="flex items-center gap-2.5" onClick={onClose}>
-          <div
-            className="w-7 h-7 rounded-[8px] flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
-          >
-            <Zap className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="font-bold text-white text-[15px] tracking-[-0.025em]">TikTag</span>
-          <span
-            className="text-[9.5px] px-1.5 py-0.5 rounded-[5px] font-bold tracking-[0.05em]"
+  return (
+    <div style={{
+      width: 252,
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      background: "linear-gradient(180deg, #060612 0%, #050510 100%)",
+      borderRight: "1px solid rgba(255,255,255,0.05)",
+      boxShadow: "6px 0 40px rgba(0,0,0,0.55)",
+      overflow: "hidden",
+    }}>
+      {/* Logo */}
+      <div style={{ padding: "20px 16px 16px", borderBottom: "1px solid rgba(255,255,255,0.04)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/dashboard" onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 10,
+              background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 16px rgba(139,92,246,0.38), inset 0 1px 0 rgba(255,255,255,0.14)",
+              color: "white", flexShrink: 0,
+            }}>
+              <NfcWave />
+            </div>
+            <div>
+              <p style={{ color: "rgba(255,255,255,0.92)", fontWeight: 700, fontSize: 14, letterSpacing: "-0.03em", lineHeight: 1.2, margin: 0 }}>TikTag</p>
+              <p style={{ color: "rgba(255,255,255,0.24)", fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", lineHeight: 1, margin: 0 }}>Identity OS</p>
+            </div>
+          </Link>
+          <button
+            className="md:hidden"
+            onClick={onClose}
             style={{
-              background: "rgba(99,102,241,0.18)",
-              border: "1px solid rgba(99,102,241,0.28)",
-              color: "#a5b4fc",
+              width: 28, height: 28, borderRadius: 8,
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "rgba(255,255,255,0.4)", cursor: "pointer",
             }}
           >
-            OS
-          </span>
-        </Link>
-        <button
-          onClick={onClose}
-          className="md:hidden w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/65 hover:bg-white/[0.07] transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+            <X size={14} />
+          </button>
+        </div>
       </div>
 
-      {/* ─── Nav ───────────────────────────────────── */}
-      <nav className="flex-1 py-3 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
-        {NAV.map(({ label, items }) => (
-          <div key={label ?? "main"} className="mb-0.5">
-            {label && (
-              <p
-                className="px-5 pt-4 pb-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
-                style={{ color: "rgba(255,255,255,0.2)" }}
-              >
-                {label}
-              </p>
-            )}
-            <div className="px-2 space-y-[1px]">
-              {items.map(({ href, label: itemLabel, icon: Icon, exact, badge }) => {
-                const active = isActive(href, exact);
+      {/* Nav */}
+      <nav style={{ flex: 1, overflowY: "auto", padding: "8px 8px", scrollbarWidth: "none" }}>
+        {NAV.map((group) => (
+          <div key={group.label} style={{ marginBottom: 6 }}>
+            <p style={{
+              color: "rgba(255,255,255,0.18)", fontSize: 9, fontWeight: 700,
+              letterSpacing: "0.14em", textTransform: "uppercase",
+              padding: "8px 8px 2px", margin: 0,
+            }}>
+              {group.label}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {group.items.map((item) => {
+                const active = checkActive(item, pathname);
+                const Icon = item.icon;
+
+                if (item.soon) {
+                  return (
+                    <div key={item.label} style={{
+                      display: "flex", alignItems: "center", gap: 9,
+                      padding: "7px 9px", borderRadius: 9,
+                      opacity: 0.38, cursor: "default",
+                    }}>
+                      <Icon size={15} style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }} />
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 500, flex: 1 }}>{item.label}</span>
+                      <span style={{
+                        padding: "1px 6px", borderRadius: 20,
+                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)",
+                        color: "rgba(255,255,255,0.2)", fontSize: 8, fontWeight: 600,
+                        letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
+                      }}>Soon</span>
+                    </div>
+                  );
+                }
+
                 return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={onClose}
-                    className={cn(
-                      "relative flex items-center gap-2.5 px-3 h-[36px] rounded-[10px] text-[13.5px] font-medium transition-all duration-150 group",
-                      active
-                        ? "text-indigo-200"
-                        : "text-white/38 hover:text-white/75 hover:bg-white/[0.04]"
-                    )}
-                    style={
-                      active
-                        ? {
-                            background: "rgba(99,102,241,0.11)",
-                            border: "1px solid rgba(99,102,241,0.2)",
-                          }
-                        : { border: "1px solid transparent" }
-                    }
-                  >
+                  <Link key={item.href} href={item.href} onClick={onClose} style={{
+                    display: "flex", alignItems: "center", gap: 9,
+                    padding: "7px 9px", borderRadius: 9,
+                    textDecoration: "none", position: "relative",
+                    background: active ? "linear-gradient(135deg, rgba(139,92,246,0.13), rgba(99,102,241,0.06))" : "transparent",
+                    border: active ? "1px solid rgba(139,92,246,0.16)" : "1px solid transparent",
+                    transition: "background 0.15s, border-color 0.15s",
+                  }}>
                     {active && (
-                      <span
-                        className="absolute left-0 inset-y-[6px] w-[3px] rounded-r-full"
-                        style={{ background: "#6366f1" }}
-                      />
+                      <div style={{
+                        position: "absolute", left: -1, top: "22%", height: "56%",
+                        width: 2.5, borderRadius: 2,
+                        background: "linear-gradient(180deg, #a78bfa, #8b5cf6)",
+                        boxShadow: "0 0 8px rgba(139,92,246,0.7)",
+                      }} />
                     )}
-                    <Icon
-                      className={cn(
-                        "w-[15px] h-[15px] shrink-0 transition-colors",
-                        active ? "text-indigo-400" : "text-white/25 group-hover:text-white/55"
-                      )}
-                    />
-                    <span className="flex-1">{itemLabel}</span>
-                    {badge && (
-                      <span
-                        className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
-                        style={{ background: "rgba(99,102,241,0.2)", color: "#a5b4fc" }}
-                      >
-                        {badge}
-                      </span>
-                    )}
+                    <Icon size={15} style={{
+                      color: active ? "rgba(167,139,250,0.9)" : "rgba(255,255,255,0.34)",
+                      flexShrink: 0,
+                      filter: active ? "drop-shadow(0 0 5px rgba(139,92,246,0.55))" : "none",
+                      transition: "all 0.15s",
+                    }} />
+                    <span style={{
+                      color: active ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.45)",
+                      fontSize: 13, fontWeight: active ? 600 : 450,
+                      letterSpacing: "-0.01em", transition: "color 0.15s",
+                    }}>
+                      {item.label}
+                    </span>
                   </Link>
                 );
               })}
@@ -174,51 +220,78 @@ export default function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean;
         ))}
       </nav>
 
-      {/* ─── User + Logout ─────────────────────────── */}
-      <div className="shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.055)" }}>
-        <div className="px-4 py-3.5 flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[13px] font-bold select-none"
-            style={{
-              background: "linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25))",
-              border: "1px solid rgba(99,102,241,0.28)",
-              color: "#a5b4fc",
-            }}
-          >
-            {userInitial}
+      {/* User card */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "10px 8px", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "2px 2px" }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: "50%",
+            background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, overflow: "hidden",
+            boxShadow: "0 4px 12px rgba(139,92,246,0.25)",
+          }}>
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <span style={{ color: "white", fontSize: 12, fontWeight: 700 }}>{initial}</span>
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white/72 text-[12.5px] font-medium truncate leading-tight">
-              {user?.email?.split("@")[0] || "—"}
-            </p>
-            <p className="text-white/28 text-[11px] mt-0.5 leading-tight">Free plan</p>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{
+              color: "rgba(255,255,255,0.78)", fontSize: 12, fontWeight: 600,
+              letterSpacing: "-0.01em", margin: 0,
+              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            }}>{displayName}</p>
+            <span style={{
+              display: "inline-block", marginTop: 2,
+              padding: "1px 7px", borderRadius: 20,
+              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)",
+              color: "rgba(255,255,255,0.25)", fontSize: 9, fontWeight: 600,
+              letterSpacing: "0.08em", textTransform: "uppercase",
+            }}>Free</span>
           </div>
-        </div>
-        <div className="px-2 pb-3">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-3 h-9 rounded-[10px] text-[13px] text-white/28 hover:text-white/55 hover:bg-white/[0.04] transition-all group"
-            style={{ border: "1px solid transparent" }}
+            title="Sign out"
+            style={{
+              width: 30, height: 30, borderRadius: 8, cursor: "pointer",
+              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "rgba(255,255,255,0.26)", transition: "all 0.15s", flexShrink: 0,
+            }}
           >
-            <LogOut className="w-[15px] h-[15px] shrink-0 group-hover:text-white/40 transition-colors" />
-            Sign out
+            <LogOut size={13} />
           </button>
         </div>
       </div>
-    </aside>
+    </div>
   );
+}
 
+export default function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose?: () => void }) {
+  const handleClose = onClose ?? (() => {});
   return (
     <>
-      <div className="hidden md:block sticky top-0 h-screen shrink-0">{inner}</div>
-      <div
-        className={cn(
-          "md:hidden fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out",
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        {inner}
+      {/* Desktop — sticky */}
+      <div className="hidden md:block" style={{ position: "sticky", top: 0, height: "100vh", flexShrink: 0 }}>
+        <SidebarInner onClose={() => {}} />
       </div>
+
+      {/* Mobile — slide drawer */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="md:hidden"
+            style={{ position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 50 }}
+            initial={{ x: -252 }}
+            animate={{ x: 0 }}
+            exit={{ x: -252 }}
+            transition={{ type: "spring", damping: 28, stiffness: 280 }}
+          >
+            <SidebarInner onClose={handleClose} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
