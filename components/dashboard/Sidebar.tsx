@@ -7,11 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Home, User, Link2, LayoutGrid, QrCode, Wifi,
-  BarChart2, Sparkles, Palette, Users, CreditCard,
-  Settings, X, LogOut, type LucideIcon,
-} from "lucide-react";
+import { X, LogOut } from "lucide-react";
+import { navByRole, type NavItem, type NavGroup } from "@/lib/dashboardConfig";
+import { useDashboard } from "@/contexts/DashboardContext";
 
 function NfcWave() {
   return (
@@ -25,63 +23,6 @@ function NfcWave() {
   );
 }
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  exact?: boolean;
-  soon?: boolean;
-  matches?: string[];
-};
-
-type NavGroup = { label: string; items: NavItem[] };
-
-const NAV: NavGroup[] = [
-  {
-    label: "Identity",
-    items: [
-      { href: "/dashboard", label: "Overview", icon: Home, exact: true },
-      {
-        href: "/dashboard/profile",
-        label: "Profile Builder",
-        icon: User,
-        matches: ["/dashboard/profile", "/dashboard/contact", "/dashboard/company", "/dashboard/social"],
-      },
-      { href: "/dashboard/links", label: "Links", icon: Link2 },
-      { href: "/dashboard/media", label: "Portfolio", icon: LayoutGrid },
-    ],
-  },
-  {
-    label: "Hardware",
-    items: [
-      { href: "/dashboard/qr", label: "QR Studio", icon: QrCode },
-      { href: "/dashboard/nfc", label: "NFC Products", icon: Wifi },
-    ],
-  },
-  {
-    label: "Intelligence",
-    items: [
-      { href: "/dashboard/analytics", label: "Analytics", icon: BarChart2 },
-      { href: "#", label: "AI Tools", icon: Sparkles, soon: true },
-    ],
-  },
-  {
-    label: "Appearance",
-    items: [{ href: "/dashboard/theme", label: "Themes", icon: Palette }],
-  },
-  {
-    label: "Business",
-    items: [
-      { href: "#", label: "Teams", icon: Users, soon: true },
-      { href: "#", label: "Billing", icon: CreditCard, soon: true },
-    ],
-  },
-  {
-    label: "Account",
-    items: [{ href: "/dashboard/settings", label: "Settings", icon: Settings }],
-  },
-];
-
 function checkActive(item: NavItem, pathname: string): boolean {
   if (item.soon) return false;
   if (item.exact) return pathname === item.href;
@@ -94,6 +35,9 @@ function SidebarInner({ onClose }: { onClose: () => void }) {
   const { logout } = useAuth();
   const router = useRouter();
   const user = auth.currentUser;
+  const { userType } = useDashboard();
+
+  const nav: NavGroup[] = navByRole[userType] ?? navByRole.personal;
 
   const initial = user?.displayName?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "?";
   const displayName = user?.displayName ?? user?.email?.split("@")[0] ?? "—";
@@ -129,7 +73,9 @@ function SidebarInner({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <p style={{ color: "rgba(255,255,255,0.92)", fontWeight: 700, fontSize: 14, letterSpacing: "-0.03em", lineHeight: 1.2, margin: 0 }}>TikTag</p>
-              <p style={{ color: "rgba(255,255,255,0.24)", fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", lineHeight: 1, margin: 0 }}>Identity OS</p>
+              <p style={{ color: "rgba(255,255,255,0.24)", fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", lineHeight: 1, margin: 0 }}>
+                {userType.charAt(0).toUpperCase() + userType.slice(1)} Mode
+              </p>
             </div>
           </Link>
           <button
@@ -149,75 +95,85 @@ function SidebarInner({ onClose }: { onClose: () => void }) {
 
       {/* Nav */}
       <nav style={{ flex: 1, overflowY: "auto", padding: "8px 8px", scrollbarWidth: "none" }}>
-        {NAV.map((group) => (
-          <div key={group.label} style={{ marginBottom: 6 }}>
-            <p style={{
-              color: "rgba(255,255,255,0.18)", fontSize: 9, fontWeight: 700,
-              letterSpacing: "0.14em", textTransform: "uppercase",
-              padding: "8px 8px 2px", margin: 0,
-            }}>
-              {group.label}
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              {group.items.map((item) => {
-                const active = checkActive(item, pathname);
-                const Icon = item.icon;
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={userType}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 8 }}
+            transition={{ duration: 0.18 }}
+          >
+            {nav.map((group) => (
+              <div key={group.label} style={{ marginBottom: 6 }}>
+                <p style={{
+                  color: "rgba(255,255,255,0.18)", fontSize: 9, fontWeight: 700,
+                  letterSpacing: "0.14em", textTransform: "uppercase",
+                  padding: "8px 8px 2px", margin: 0,
+                }}>
+                  {group.label}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  {group.items.map((item) => {
+                    const active = checkActive(item, pathname);
+                    const Icon = item.icon;
 
-                if (item.soon) {
-                  return (
-                    <div key={item.label} style={{
-                      display: "flex", alignItems: "center", gap: 9,
-                      padding: "7px 9px", borderRadius: 9,
-                      opacity: 0.38, cursor: "default",
-                    }}>
-                      <Icon size={15} style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }} />
-                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 500, flex: 1 }}>{item.label}</span>
-                      <span style={{
-                        padding: "1px 6px", borderRadius: 20,
-                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)",
-                        color: "rgba(255,255,255,0.2)", fontSize: 8, fontWeight: 600,
-                        letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
-                      }}>Soon</span>
-                    </div>
-                  );
-                }
+                    if (item.soon) {
+                      return (
+                        <div key={item.label} style={{
+                          display: "flex", alignItems: "center", gap: 9,
+                          padding: "7px 9px", borderRadius: 9,
+                          opacity: 0.38, cursor: "default",
+                        }}>
+                          <Icon size={15} style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }} />
+                          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 500, flex: 1 }}>{item.label}</span>
+                          <span style={{
+                            padding: "1px 6px", borderRadius: 20,
+                            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)",
+                            color: "rgba(255,255,255,0.2)", fontSize: 8, fontWeight: 600,
+                            letterSpacing: "0.06em", textTransform: "uppercase",
+                          }}>Soon</span>
+                        </div>
+                      );
+                    }
 
-                return (
-                  <Link key={item.href} href={item.href} onClick={onClose} style={{
-                    display: "flex", alignItems: "center", gap: 9,
-                    padding: "7px 9px", borderRadius: 9,
-                    textDecoration: "none", position: "relative",
-                    background: active ? "linear-gradient(135deg, rgba(139,92,246,0.13), rgba(99,102,241,0.06))" : "transparent",
-                    border: active ? "1px solid rgba(139,92,246,0.16)" : "1px solid transparent",
-                    transition: "background 0.15s, border-color 0.15s",
-                  }}>
-                    {active && (
-                      <div style={{
-                        position: "absolute", left: -1, top: "22%", height: "56%",
-                        width: 2.5, borderRadius: 2,
-                        background: "linear-gradient(180deg, #a78bfa, #8b5cf6)",
-                        boxShadow: "0 0 8px rgba(139,92,246,0.7)",
-                      }} />
-                    )}
-                    <Icon size={15} style={{
-                      color: active ? "rgba(167,139,250,0.9)" : "rgba(255,255,255,0.34)",
-                      flexShrink: 0,
-                      filter: active ? "drop-shadow(0 0 5px rgba(139,92,246,0.55))" : "none",
-                      transition: "all 0.15s",
-                    }} />
-                    <span style={{
-                      color: active ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.45)",
-                      fontSize: 13, fontWeight: active ? 600 : 450,
-                      letterSpacing: "-0.01em", transition: "color 0.15s",
-                    }}>
-                      {item.label}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+                    return (
+                      <Link key={item.href} href={item.href} onClick={onClose} style={{
+                        display: "flex", alignItems: "center", gap: 9,
+                        padding: "7px 9px", borderRadius: 9,
+                        textDecoration: "none", position: "relative",
+                        background: active ? "linear-gradient(135deg, rgba(139,92,246,0.13), rgba(99,102,241,0.06))" : "transparent",
+                        border: active ? "1px solid rgba(139,92,246,0.16)" : "1px solid transparent",
+                        transition: "background 0.15s, border-color 0.15s",
+                      }}>
+                        {active && (
+                          <div style={{
+                            position: "absolute", left: -1, top: "22%", height: "56%",
+                            width: 2.5, borderRadius: 2,
+                            background: "linear-gradient(180deg, #a78bfa, #8b5cf6)",
+                            boxShadow: "0 0 8px rgba(139,92,246,0.7)",
+                          }} />
+                        )}
+                        <Icon size={15} style={{
+                          color: active ? "rgba(167,139,250,0.9)" : "rgba(255,255,255,0.34)",
+                          flexShrink: 0,
+                          filter: active ? "drop-shadow(0 0 5px rgba(139,92,246,0.55))" : "none",
+                          transition: "all 0.15s",
+                        }} />
+                        <span style={{
+                          color: active ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.45)",
+                          fontSize: 13, fontWeight: active ? 600 : 450,
+                          letterSpacing: "-0.01em", transition: "color 0.15s",
+                        }}>
+                          {item.label}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       </nav>
 
       {/* User card */}

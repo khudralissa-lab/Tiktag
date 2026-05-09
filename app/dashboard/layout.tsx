@@ -6,6 +6,7 @@ import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
+import { DashboardProvider } from "@/contexts/DashboardContext";
 
 const AuthGuard = dynamic(() => import("@/components/auth/AuthGuard"), { ssr: false });
 
@@ -42,6 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <AuthGuard>
+      <DashboardProvider>
       <div
         className="flex min-h-screen"
         style={{
@@ -148,6 +150,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+      </DashboardProvider>
     </AuthGuard>
   );
 }

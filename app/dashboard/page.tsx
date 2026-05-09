@@ -1,6 +1,5 @@
 "use client";
 
-import { useProfile } from "@/hooks/useProfile";
 import { auth } from "@/lib/firebase";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -9,18 +8,20 @@ import { profileCompletion } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Eye, MousePointer, QrCode, User, Link2, Wifi,
-  Copy, ExternalLink, CheckCircle2, Palette,
+  Copy, ExternalLink, CheckCircle2,
   ArrowRight, Check, BarChart2, Globe, Zap,
   Activity, Smartphone, BookUser,
 } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 import PageSkeleton from "@/components/ui/PageSkeleton";
 import type { AnalyticsEvent } from "@/types";
+import { useDashboard } from "@/contexts/DashboardContext";
+import { statsByRole, quickActionsByRole } from "@/lib/dashboardConfig";
 
 const BASE_URL = "https://tiktag.pages.dev";
 const spr = { type: "spring" as const, stiffness: 260, damping: 22 };
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function timeAgo(ts: number): string {
   const d = Date.now() - ts;
@@ -43,12 +44,12 @@ function eventLabel(e: AnalyticsEvent): string {
 }
 
 function sourceLabel(s: string): { text: string; color: string; bg: string } {
-  if (s === "nfc")    return { text: "NFC",    color: "#a78bfa", bg: "rgba(139,92,246,0.12)"  };
-  if (s === "qr")     return { text: "QR",     color: "#60a5fa", bg: "rgba(59,130,246,0.12)"  };
-  return               { text: "Direct", color: "rgba(255,255,255,0.4)", bg: "rgba(255,255,255,0.06)" };
+  if (s === "nfc")  return { text: "NFC",    color: "#a78bfa", bg: "rgba(139,92,246,0.12)" };
+  if (s === "qr")   return { text: "QR",     color: "#60a5fa", bg: "rgba(59,130,246,0.12)" };
+  return              { text: "Direct", color: "rgba(255,255,255,0.4)", bg: "rgba(255,255,255,0.06)" };
 }
 
-// ─── Sub-components ─────────────────────────────────────────────────────────
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
 function StatCard({ label, value, icon: Icon, color, delay }: {
   label: string; value: number; icon: React.ElementType; color: string; delay: number;
@@ -103,33 +104,16 @@ function IdentityCard({ profile }: { profile: Record<string, unknown> | null }) 
       style={{ display: "flex", justifyContent: "center" }}
     >
       <div style={{
-        width: 196,
-        height: 356,
-        borderRadius: 36,
+        width: 196, height: 356, borderRadius: 36,
         background: "linear-gradient(180deg, #0e0e1c 0%, #0a0a16 60%, #080812 100%)",
         border: "1px solid rgba(255,255,255,0.1)",
-        boxShadow: `
-          0 60px 120px rgba(0,0,0,0.8),
-          0 24px 48px rgba(0,0,0,0.6),
-          0 0 60px rgba(88,28,235,0.07),
-          inset 0 1px 0 rgba(255,255,255,0.08)
-        `,
+        boxShadow: "0 60px 120px rgba(0,0,0,0.8), 0 24px 48px rgba(0,0,0,0.6), 0 0 60px rgba(88,28,235,0.07), inset 0 1px 0 rgba(255,255,255,0.08)",
         position: "relative", overflow: "hidden", flexShrink: 0,
       }}>
-        {/* Dynamic island */}
-        <div style={{
-          position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)",
-          width: 68, height: 18, background: "#000", borderRadius: 14, zIndex: 10,
-        }} />
-
-        {/* Profile accent gradient */}
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, height: 130,
-          background: "linear-gradient(180deg, rgba(88,28,235,0.12) 0%, transparent 100%)",
-        }} />
+        <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)", width: 68, height: 18, background: "#000", borderRadius: 14, zIndex: 10 }} />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 130, background: "linear-gradient(180deg, rgba(88,28,235,0.12) 0%, transparent 100%)" }} />
 
         <div style={{ paddingTop: 40, paddingLeft: 12, paddingRight: 12, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {/* Avatar */}
           <motion.div
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -137,8 +121,7 @@ function IdentityCard({ profile }: { profile: Record<string, unknown> | null }) 
               width: 56, height: 56, borderRadius: "50%",
               background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 8px 24px rgba(139,92,246,0.4)",
-              marginBottom: 8, overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(139,92,246,0.4)", marginBottom: 8, overflow: "hidden",
             }}
           >
             {profile?.photoURL ? (
@@ -158,7 +141,6 @@ function IdentityCard({ profile }: { profile: Record<string, unknown> | null }) 
             <p style={{ color: "rgba(255,255,255,0.18)", fontSize: 8, marginBottom: 10 }}>{profile.location}</p>
           )}
 
-          {/* Action buttons */}
           <div style={{ display: "flex", gap: 4, width: "100%", marginBottom: 7, marginTop: 6 }}>
             {[
               { l: "Call", bg: "rgba(74,222,128,0.1)", color: "#4ade80" },
@@ -175,14 +157,12 @@ function IdentityCard({ profile }: { profile: Record<string, unknown> | null }) 
             ))}
           </div>
 
-          {/* Links */}
           <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 3 }}>
             {links.length > 0 ? links.map((link) => (
               <div key={link.label} style={{
                 height: 24, borderRadius: 7,
                 background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.14)",
-                display: "flex", alignItems: "center", paddingLeft: 8, paddingRight: 8,
-                justifyContent: "space-between",
+                display: "flex", alignItems: "center", paddingLeft: 8, paddingRight: 8, justifyContent: "space-between",
               }}>
                 <span style={{ color: "rgba(167,139,250,0.75)", fontSize: 8 }}>{link.label}</span>
                 <span style={{ color: "rgba(139,92,246,0.4)", fontSize: 7 }}>→</span>
@@ -200,7 +180,6 @@ function IdentityCard({ profile }: { profile: Record<string, unknown> | null }) 
           </div>
         </div>
 
-        {/* Ground reflection */}
         <div style={{
           position: "absolute", bottom: 0, left: "10%", right: "10%", height: 40,
           background: "linear-gradient(180deg, rgba(139,92,246,0.04) 0%, transparent 100%)",
@@ -241,14 +220,15 @@ function QuickAction({ href, icon: Icon, label, desc, color, delay }: {
   );
 }
 
-// ─── Main page ───────────────────────────────────────────────────────────────
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const uid = auth.currentUser?.uid;
-  const { profile, loading, error, retry } = useProfile(uid);
-  const [stats, setStats]               = useState({ views: 0, clicks: 0, qr: 0, saves: 0 });
+  const { profile, loading, error, retry, userType } = useDashboard();
+
+  const [stats, setStats] = useState({ views: 0, clicks: 0, qr: 0, saves: 0, nfc: 0 });
   const [recentEvents, setRecentEvents] = useState<AnalyticsEvent[]>([]);
-  const [copied, setCopied]             = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!uid) return;
@@ -258,6 +238,7 @@ export default function DashboardPage() {
         clicks: events.filter((e) => e.type === "click").length,
         qr:     events.filter((e) => e.source === "qr").length,
         saves:  events.filter((e) => e.type === "click" && (e.target ?? "").toLowerCase().includes("save")).length,
+        nfc:    events.filter((e) => e.source === "nfc").length,
       });
       setRecentEvents([...events].sort((a, b) => b.timestamp - a.timestamp).slice(0, 6));
     });
@@ -278,34 +259,29 @@ export default function DashboardPage() {
     setTimeout(() => setCopied(false), 2200);
   };
 
+  // Role-adaptive config
+  const roleStats   = statsByRole[userType] ?? statsByRole.personal;
+  const roleActions = quickActionsByRole[userType] ?? quickActionsByRole.personal;
+
+  const statItems = roleStats.map((s) => ({
+    label: s.label,
+    value: stats[s.dataKey],
+    icon:  s.icon,
+    color: s.color,
+  }));
+
   const checklist = [
-    { label: "Upload a profile photo",    done: !!profile?.photoURL,                                                                href: "/dashboard/profile"  },
-    { label: "Set your display name",     done: !!profile?.displayName,                                                             href: "/dashboard/profile"  },
-    { label: "Add a job title",           done: !!profile?.title,                                                                   href: "/dashboard/profile"  },
-    { label: "Write your bio",            done: !!profile?.bio,                                                                     href: "/dashboard/profile"  },
-    { label: "Add phone or WhatsApp",     done: !!(profile?.phone || profile?.whatsapp),                                            href: "/dashboard/contact"  },
-    { label: "Claim your username",       done: !!profile?.username,                                                                href: "/dashboard/settings" },
-    { label: "Connect a social account",  done: !!(profile?.linkedin || profile?.instagram || profile?.facebook || profile?.tiktok || profile?.youtube || profile?.xTwitter), href: "/dashboard/social" },
-    { label: "Add a custom link",         done: (profile?.links?.length ?? 0) > 0,                                                 href: "/dashboard/links"   },
+    { label: "Upload a profile photo",   done: !!profile?.photoURL,                                                                              href: "/dashboard/profile"  },
+    { label: "Set your display name",    done: !!profile?.displayName,                                                                           href: "/dashboard/profile"  },
+    { label: "Add a job title",          done: !!profile?.title,                                                                                  href: "/dashboard/profile"  },
+    { label: "Write your bio",           done: !!profile?.bio,                                                                                   href: "/dashboard/profile"  },
+    { label: "Add phone or WhatsApp",    done: !!(profile?.phone || profile?.whatsapp),                                                          href: "/dashboard/contact"  },
+    { label: "Claim your username",      done: !!profile?.username,                                                                              href: "/dashboard/settings" },
+    { label: "Connect a social account", done: !!(profile?.linkedin || profile?.instagram || profile?.facebook || profile?.tiktok || profile?.youtube || profile?.xTwitter), href: "/dashboard/social" },
+    { label: "Add a custom link",        done: (profile?.links?.length ?? 0) > 0,                                                               href: "/dashboard/links"    },
   ];
   const checklistDone = checklist.filter((c) => c.done).length;
-  const allDone       = checklistDone === checklist.length;
-
-  const statItems = [
-    { label: "Profile Views",  value: stats.views,  icon: Eye,          color: "#8b5cf6" },
-    { label: "NFC Taps",       value: stats.saves,  icon: Wifi,         color: "#22d3ee" },
-    { label: "QR Scans",       value: stats.qr,     icon: QrCode,       color: "#60a5fa" },
-    { label: "Link Clicks",    value: stats.clicks, icon: MousePointer, color: "#4ade80" },
-  ];
-
-  const actions = [
-    { href: "/dashboard/profile",   icon: User,      label: "Profile Builder", desc: "Name, bio, photos",    color: "#8b5cf6" },
-    { href: "/dashboard/links",     icon: Link2,     label: "Manage Links",    desc: "Add or reorder links", color: "#4ade80" },
-    { href: "/dashboard/qr",        icon: QrCode,    label: "QR Studio",       desc: "Design & export QR",   color: "#60a5fa" },
-    { href: "/dashboard/nfc",       icon: Wifi,      label: "NFC Products",    desc: "Setup your NFC card",  color: "#22d3ee" },
-    { href: "/dashboard/theme",     icon: Palette,   label: "Themes",          desc: "Style your profile",   color: "#f59e0b" },
-    { href: "/dashboard/analytics", icon: BarChart2, label: "Analytics",       desc: "Views & engagement",   color: "#f472b6" },
-  ];
+  const allDone = checklistDone === checklist.length;
 
   return (
     <div style={{ padding: "32px 28px 48px", maxWidth: 1040, position: "relative" }}>
@@ -318,21 +294,19 @@ export default function DashboardPage() {
       <div style={{ position: "relative", zIndex: 1 }}>
         {error && <BlockedBanner errorType={error} onRetry={retry} />}
 
-        {/* ── Header ──────────────────────────────────────────────── */}
+        {/* ── Header ── */}
         <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spr }}
+          initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr }}
           style={{ marginBottom: 28, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}
         >
           <div>
             <p style={{ color: "rgba(139,92,246,0.65)", fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", margin: "0 0 6px" }}>
-              Identity Command
+              {userType.charAt(0).toUpperCase() + userType.slice(1)} Dashboard
             </p>
             <h1 style={{ color: "rgba(255,255,255,0.94)", fontSize: "clamp(22px, 2.5vw, 30px)", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.1, margin: 0 }}>
               {timeGreet}, {firstName}.
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 13, marginTop: 5, margin: "5px 0 0" }}>
+            <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 13, margin: "5px 0 0" }}>
               {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </p>
           </div>
@@ -353,16 +327,12 @@ export default function DashboardPage() {
                 {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
                 {copied ? "Copied!" : "Copy link"}
               </button>
-              <Link
-                href={`/u/${profile?.username}`}
-                target="_blank"
-                style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "8px 14px", borderRadius: 10, textDecoration: "none",
-                  background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.22)",
-                  color: "rgba(167,139,250,0.85)", fontSize: 12, fontWeight: 500,
-                }}
-              >
+              <Link href={`/u/${profile?.username}`} target="_blank" style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "8px 14px", borderRadius: 10, textDecoration: "none",
+                background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.22)",
+                color: "rgba(167,139,250,0.85)", fontSize: 12, fontWeight: 500,
+              }}>
                 <Globe size={13} />
                 View profile
               </Link>
@@ -370,23 +340,26 @@ export default function DashboardPage() {
           )}
         </motion.div>
 
-        {/* ── Stats row ────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        {/* ── Stats row (role-adaptive) ── */}
+        <motion.div
+          key={userType}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spr, delay: 0.04 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"
+        >
           {statItems.map((s, i) => (
             <StatCard key={s.label} {...s} delay={0.05 + i * 0.06} />
           ))}
-        </div>
+        </motion.div>
 
-        {/* ── Body: identity preview + right column ─────────────────── */}
+        {/* ── Body: identity preview + quick actions ── */}
         <div className="grid grid-cols-1 md:grid-cols-[244px_1fr] gap-5 mb-5" style={{ alignItems: "start" }}>
           {/* Identity preview card */}
           <motion.div
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ ...spr, delay: 0.18 }}
+            initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ ...spr, delay: 0.18 }}
             style={{
-              padding: "24px",
-              borderRadius: 20,
+              padding: "24px", borderRadius: 20,
               background: "linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.014) 100%)",
               border: "1px solid rgba(255,255,255,0.065)",
               boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
@@ -406,7 +379,6 @@ export default function DashboardPage() {
             </div>
             <IdentityCard profile={profile as Record<string, unknown> | null} />
 
-            {/* Identity strength strip */}
             <div style={{ width: "100%", minWidth: 196 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -429,31 +401,34 @@ export default function DashboardPage() {
             </div>
           </motion.div>
 
-          {/* Right column: quick actions */}
+          {/* Right: role-adaptive quick actions */}
           <div>
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.22 }}
+              key={`qa-label-${userType}`}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }}
               style={{ color: "rgba(255,255,255,0.2)", fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}
             >
               Quick Access
             </motion.p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {actions.map((a, i) => (
+            <motion.div
+              key={`qa-grid-${userType}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spr, delay: 0.24 }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+            >
+              {roleActions.map((a, i) => (
                 <QuickAction key={a.href} {...a} delay={0.24 + i * 0.05} />
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
 
-        {/* ── Bottom row: checklist + activity ─────────────────────── */}
+        {/* ── Bottom row: checklist + activity ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Setup checklist / complete state */}
+          {/* Setup checklist */}
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...spr, delay: 0.32 }}
+            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr, delay: 0.32 }}
             style={{
               borderRadius: 18,
               background: "linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.014) 100%)",
@@ -479,16 +454,10 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ padding: "6px 8px" }}>
                   {checklist.map(({ label, done, href }, i) => (
-                    <motion.div
-                      key={label}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ ...spr, delay: 0.36 + i * 0.03 }}
-                    >
+                    <motion.div key={label} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ ...spr, delay: 0.36 + i * 0.03 }}>
                       <Link href={href} style={{
                         display: "flex", alignItems: "center", gap: 10,
-                        padding: "8px 10px", borderRadius: 10, textDecoration: "none",
-                        transition: "background 0.15s",
+                        padding: "8px 10px", borderRadius: 10, textDecoration: "none", transition: "background 0.15s",
                       }}>
                         <div style={{
                           width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
@@ -502,7 +471,6 @@ export default function DashboardPage() {
                           fontSize: 12.5, flex: 1,
                           color: done ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.58)",
                           textDecoration: done ? "line-through" : "none",
-                          transition: "color 0.15s",
                         }}>{label}</span>
                         {!done && <ArrowRight size={11} style={{ color: "rgba(255,255,255,0.18)", flexShrink: 0 }} />}
                       </Link>
@@ -537,9 +505,7 @@ export default function DashboardPage() {
 
           {/* Activity feed */}
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...spr, delay: 0.38 }}
+            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr, delay: 0.38 }}
             style={{
               borderRadius: 18,
               background: "linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.014) 100%)",
@@ -552,7 +518,6 @@ export default function DashboardPage() {
               <Activity size={13} style={{ color: "rgba(255,255,255,0.35)" }} />
               <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600, margin: 0 }}>Recent Activity</p>
             </div>
-
             {recentEvents.length === 0 ? (
               <div style={{ padding: "32px 24px", textAlign: "center" }}>
                 <Smartphone size={28} style={{ color: "rgba(255,255,255,0.1)", margin: "0 auto 12px" }} />
@@ -566,13 +531,8 @@ export default function DashboardPage() {
                   return (
                     <motion.div
                       key={`${evt.timestamp}-${i}`}
-                      initial={{ opacity: 0, x: 8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ ...spr, delay: 0.42 + i * 0.04 }}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 10,
-                        padding: "9px 10px", borderRadius: 10,
-                      }}
+                      initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ ...spr, delay: 0.42 + i * 0.04 }}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 10 }}
                     >
                       <div style={{
                         width: 30, height: 30, borderRadius: 9, flexShrink: 0,
@@ -586,9 +546,7 @@ export default function DashboardPage() {
                         }
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 12.5, fontWeight: 500, margin: 0 }}>
-                          {eventLabel(evt)}
-                        </p>
+                        <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 12.5, fontWeight: 500, margin: 0 }}>{eventLabel(evt)}</p>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                           <span style={{
                             padding: "1px 6px", borderRadius: 20,
@@ -606,14 +564,9 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* ── NFC status banner ─────────────────────────────────────── */}
-        {profile && profile.nfcStatus !== "activated" && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...spr, delay: 0.48 }}
-            style={{ marginTop: 20 }}
-          >
+        {/* ── NFC banner (contextual per role) ── */}
+        {profile && profile.nfcStatus !== "activated" && userType !== "enterprise" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr, delay: 0.48 }} style={{ marginTop: 20 }}>
             <Link href="/dashboard/nfc" style={{
               display: "flex", alignItems: "center", gap: 14,
               padding: "16px 20px", borderRadius: 16, textDecoration: "none",
@@ -631,12 +584,18 @@ export default function DashboardPage() {
               </div>
               <div style={{ flex: 1 }}>
                 <p style={{ color: "rgba(255,255,255,0.82)", fontSize: 13, fontWeight: 600, margin: 0 }}>
-                  {profile.nfcStatus === "ordered" ? "Your NFC card is on its way" : "Get your NFC card"}
+                  {userType === "business" || userType === "restaurant"
+                    ? profile.nfcStatus === "ordered" ? "Your NFC cards are on the way" : "Activate your NFC cards"
+                    : profile.nfcStatus === "ordered" ? "Your NFC card is on its way" : "Get your NFC card"
+                  }
                 </p>
                 <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, margin: "2px 0 0" }}>
                   {profile.nfcStatus === "ordered"
                     ? "We're crafting your card. It will arrive shortly."
-                    : "One tap to share your complete identity. No app needed."}
+                    : userType === "events"
+                      ? "Smart NFC badges for your attendees. One tap to connect."
+                      : "One tap to share your complete identity. No app needed."
+                  }
                 </p>
               </div>
               <ArrowRight size={14} style={{ color: "rgba(34,211,238,0.5)", flexShrink: 0 }} />

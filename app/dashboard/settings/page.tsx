@@ -1,17 +1,19 @@
 "use client";
 
-import { useProfile } from "@/hooks/useProfile";
 import { auth } from "@/lib/firebase";
 import { isUsernameAvailable, updateUsername } from "@/lib/firestore";
 import { motion } from "framer-motion";
 import {
   ExternalLink, CheckCircle2, XCircle, Loader2,
-  User, AtSign, Mail, CreditCard, Globe, Zap, ArrowRight,
+  User, AtSign, Mail, CreditCard, Globe, Zap, ArrowRight, Check,
 } from "lucide-react";
 import BlockedBanner from "@/components/ui/BlockedBanner";
 import PageSkeleton from "@/components/ui/PageSkeleton";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useDashboard } from "@/contexts/DashboardContext";
+import { EXPERIENCE_OPTIONS, type UserType } from "@/lib/dashboardConfig";
+import { Toast, useToast } from "@/components/ui/Toast";
 
 const BASE_URL = "https://tiktag.pages.dev";
 const spr = { type: "spring" as const, stiffness: 260, damping: 22 };
@@ -59,7 +61,8 @@ function FieldRow({ icon: Icon, label, children, accent = "#8b5cf6" }: {
 
 export default function SettingsPage() {
   const user = auth.currentUser;
-  const { profile, loading, error, retry } = useProfile(user?.uid);
+  const { profile, loading, error, retry, update, userType } = useDashboard();
+  const toast = useToast();
 
   const [username, setUsername] = useState("");
   const [checking, setChecking] = useState(false);
@@ -67,6 +70,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState("");
+  const [switchingType, setSwitchingType] = useState<UserType | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -116,6 +120,19 @@ export default function SettingsPage() {
     }
   };
 
+  const handleExperienceSwitch = async (newType: UserType) => {
+    if (newType === userType || switchingType) return;
+    setSwitchingType(newType);
+    try {
+      await update({ userType: newType });
+      toast.show(`Switched to ${newType.charAt(0).toUpperCase() + newType.slice(1)} experience`);
+    } catch {
+      // silent — profile update shows errors via BlockedBanner
+    } finally {
+      setSwitchingType(null);
+    }
+  };
+
   if (loading) return <PageSkeleton rows={4} />;
 
   const validationError = validateUsername(username);
@@ -135,12 +152,7 @@ export default function SettingsPage() {
         {error && <BlockedBanner errorType={error} onRetry={retry} />}
 
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spr }}
-          style={{ marginBottom: 32 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr }} style={{ marginBottom: 32 }}>
           <p style={{ color: "rgba(139,92,246,0.65)", fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", margin: "0 0 6px" }}>
             Account Settings
           </p>
@@ -148,17 +160,111 @@ export default function SettingsPage() {
             Settings
           </h1>
           <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 13, margin: "5px 0 0" }}>
-            Manage your identity and account preferences.
+            Manage your experience, identity, and account preferences.
           </p>
         </motion.div>
 
+        {/* ── Experience Mode section ── */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr, delay: 0.06 }} style={{ marginBottom: 24 }}>
+          <SectionLabel>Experience Mode</SectionLabel>
+          <div style={{
+            borderRadius: 18,
+            background: "linear-gradient(180deg, rgba(255,255,255,0.038) 0%, rgba(255,255,255,0.016) 100%)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
+            padding: "16px",
+            overflow: "hidden",
+          }}>
+            <p style={{ color: "rgba(255,255,255,0.32)", fontSize: 12, lineHeight: 1.55, margin: "0 0 14px" }}>
+              Choose the experience that matches your use case. Your sidebar, overview, and tools adapt instantly.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {EXPERIENCE_OPTIONS.map((opt, i) => {
+                const active = userType === opt.type;
+                const switching = switchingType === opt.type;
+                const Icon = opt.icon;
+
+                return (
+                  <motion.button
+                    key={opt.type}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...spr, delay: 0.1 + i * 0.04 }}
+                    onClick={() => handleExperienceSwitch(opt.type)}
+                    disabled={!!switchingType}
+                    whileHover={{ scale: active ? 1 : 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{
+                      padding: "14px 12px",
+                      borderRadius: 14,
+                      border: active
+                        ? `1px solid ${opt.color}40`
+                        : "1px solid rgba(255,255,255,0.06)",
+                      background: active
+                        ? `linear-gradient(135deg, ${opt.color}18, ${opt.color}08)`
+                        : "rgba(255,255,255,0.026)",
+                      boxShadow: active
+                        ? `0 4px 20px ${opt.color}18, inset 0 1px 0 ${opt.color}20`
+                        : "none",
+                      cursor: switchingType ? "default" : "pointer",
+                      textAlign: "left",
+                      position: "relative",
+                      overflow: "hidden",
+                      transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s",
+                      opacity: switchingType && !active && switchingType !== opt.type ? 0.5 : 1,
+                    }}
+                  >
+                    {/* Active check */}
+                    {active && (
+                      <div style={{
+                        position: "absolute", top: 8, right: 8,
+                        width: 16, height: 16, borderRadius: 6,
+                        background: `${opt.color}28`, border: `1px solid ${opt.color}40`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <Check size={9} style={{ color: opt.color }} />
+                      </div>
+                    )}
+
+                    {/* Spinner while switching */}
+                    {switching && (
+                      <div style={{
+                        position: "absolute", top: 8, right: 8,
+                        width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <Loader2 size={12} style={{ color: opt.color, animation: "spin 1s linear infinite" }} />
+                      </div>
+                    )}
+
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 9, marginBottom: 10,
+                      background: `${opt.color}18`, border: `1px solid ${opt.color}24`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Icon size={14} style={{ color: opt.color }} />
+                    </div>
+                    <p style={{
+                      color: active ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.68)",
+                      fontSize: 12, fontWeight: 600, margin: "0 0 2px",
+                      letterSpacing: "-0.01em",
+                    }}>
+                      {opt.label}
+                    </p>
+                    <p style={{
+                      color: active ? "rgba(255,255,255,0.38)" : "rgba(255,255,255,0.24)",
+                      fontSize: 10, lineHeight: 1.4, margin: 0,
+                    }}>
+                      {opt.desc}
+                    </p>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+
         {/* ── Identity section ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spr, delay: 0.08 }}
-          style={{ marginBottom: 20 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr, delay: 0.14 }} style={{ marginBottom: 20 }}>
           <SectionLabel>Identity</SectionLabel>
           <div style={{
             borderRadius: 18,
@@ -167,13 +273,11 @@ export default function SettingsPage() {
             boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
             overflow: "hidden",
           }}>
-            {/* Username field */}
             <FieldRow icon={AtSign} label="Username" accent="#8b5cf6">
               <div style={{
                 display: "flex", alignItems: "center", gap: 8,
                 padding: "9px 12px", borderRadius: 10,
                 background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)",
-                transition: "border-color 0.15s",
               }}>
                 <span style={{ color: "rgba(255,255,255,0.22)", fontSize: 13, fontWeight: 500, flexShrink: 0 }}>@</span>
                 <input
@@ -182,8 +286,7 @@ export default function SettingsPage() {
                   placeholder="your-username"
                   style={{
                     flex: 1, background: "transparent", border: "none", outline: "none",
-                    color: "rgba(255,255,255,0.88)", fontSize: 13, fontWeight: 500,
-                    minWidth: 0,
+                    color: "rgba(255,255,255,0.88)", fontSize: 13, fontWeight: 500, minWidth: 0,
                   }}
                 />
                 {checking && <Loader2 size={14} style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0, animation: "spin 1s linear infinite" }} />}
@@ -205,18 +308,13 @@ export default function SettingsPage() {
               )}
             </FieldRow>
 
-            {/* Profile URL */}
             <FieldRow icon={Globe} label="Public Profile URL" accent="#6366f1">
               {profileUrl ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ color: "rgba(167,139,250,0.75)", fontSize: 13, fontWeight: 500, wordBreak: "break-all" }}>
                     {profileUrl}
                   </span>
-                  <a
-                    href={`/u/${profile?.username}`}
-                    target="_blank"
-                    style={{ color: "rgba(139,92,246,0.5)", flexShrink: 0, display: "flex", alignItems: "center" }}
-                  >
+                  <a href={`/u/${profile?.username}`} target="_blank" style={{ color: "rgba(139,92,246,0.5)", flexShrink: 0 }}>
                     <ExternalLink size={13} />
                   </a>
                 </div>
@@ -230,12 +328,7 @@ export default function SettingsPage() {
         </motion.div>
 
         {/* ── Account section ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spr, delay: 0.14 }}
-          style={{ marginBottom: 20 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr, delay: 0.2 }} style={{ marginBottom: 20 }}>
           <SectionLabel>Account</SectionLabel>
           <div style={{
             borderRadius: 18,
@@ -245,12 +338,8 @@ export default function SettingsPage() {
             overflow: "hidden",
           }}>
             <FieldRow icon={Mail} label="Email Address" accent="#60a5fa">
-              <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 13, fontWeight: 500, margin: 0 }}>
-                {user?.email ?? "—"}
-              </p>
-              <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, margin: "3px 0 0" }}>
-                Managed by your sign-in provider.
-              </p>
+              <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 13, fontWeight: 500, margin: 0 }}>{user?.email ?? "—"}</p>
+              <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, margin: "3px 0 0" }}>Managed by your sign-in provider.</p>
             </FieldRow>
 
             <FieldRow icon={CreditCard} label="Current Plan" accent="#f59e0b">
@@ -266,9 +355,9 @@ export default function SettingsPage() {
                 {(!profile?.plan || profile.plan === "free") && (
                   <div style={{
                     display: "flex", alignItems: "center", gap: 5,
-                    padding: "6px 12px", borderRadius: 8, cursor: "default",
+                    padding: "6px 12px", borderRadius: 8,
                     background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)",
-                    color: "#fbbf24", fontSize: 11, fontWeight: 600, flexShrink: 0,
+                    color: "#fbbf24", fontSize: 11, fontWeight: 600,
                   }}>
                     <Zap size={11} />
                     Upgrade
@@ -280,12 +369,7 @@ export default function SettingsPage() {
         </motion.div>
 
         {/* ── Save button ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spr, delay: 0.2 }}
-          style={{ display: "flex", alignItems: "center", gap: 12 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spr, delay: 0.26 }} style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
             onClick={handleSave}
             disabled={!canSave}
@@ -321,25 +405,16 @@ export default function SettingsPage() {
           )}
         </motion.div>
 
-        {/* ── Danger zone placeholder ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-          style={{ marginTop: 40 }}
-        >
+        {/* ── More ── */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} style={{ marginTop: 40 }}>
           <SectionLabel>More</SectionLabel>
-          <Link
-            href="/dashboard/profile"
-            style={{
-              display: "flex", alignItems: "center", gap: 12,
-              padding: "14px 18px", borderRadius: 14, textDecoration: "none",
-              background: "linear-gradient(180deg, rgba(255,255,255,0.028) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(255,255,255,0.055)",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
-              transition: "border-color 0.15s",
-            }}
-          >
+          <Link href="/dashboard/profile" style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "14px 18px", borderRadius: 14, textDecoration: "none",
+            background: "linear-gradient(180deg, rgba(255,255,255,0.028) 0%, rgba(255,255,255,0.01) 100%)",
+            border: "1px solid rgba(255,255,255,0.055)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+          }}>
             <div style={{
               width: 34, height: 34, borderRadius: 10, flexShrink: 0,
               background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.18)",
@@ -356,9 +431,8 @@ export default function SettingsPage() {
         </motion.div>
       </div>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
+      <Toast message={toast.message} onDismiss={toast.dismiss} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

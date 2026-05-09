@@ -51,6 +51,8 @@ export interface UserProfile {
   // Appearance
   accentColor: string;
   theme?: string;
+  // Experience
+  userType?: "personal" | "creator" | "business" | "restaurant" | "events" | "enterprise";
   // Meta
   plan: "free" | "pro";
   nfcStatus?: "not_ordered" | "ordered" | "activated";
